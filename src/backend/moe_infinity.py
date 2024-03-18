@@ -2,6 +2,7 @@ import torch
 import os
 from transformers import AutoTokenizer
 import transformers
+from transformers import AutoModelForCausalLM
 from moe_infinity import MoE
 from typing import List, Tuple, Optional, Union
 
@@ -26,7 +27,9 @@ class MoEHFLM(HFLM):
         self.offload_path = offload_path
         self.device_memory_ratio = device_memory_ratio
         self.use_chat_template = use_chat_template
-        super().__init__(*args, **kwargs, pretrained=pretrained)  # Assuming HFLM accepts a 'pretrained' arg and handles it
+        if "device" in kwargs:
+            kwargs.pop("device")
+        super().__init__(*args, **kwargs, pretrained=pretrained, device="cuda:0")  # Assuming HFLM accepts a 'pretrained' arg and handles it
         # self._create_model()
 
     def _create_model(self, *args, **kwargs):
