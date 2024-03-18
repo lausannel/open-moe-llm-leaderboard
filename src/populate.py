@@ -60,10 +60,11 @@ def get_leaderboard_df(results_path: str,
     # if AutoEvalColumn.average.name in df:
     #     df = df.sort_values(by=[AutoEvalColumn.average.name], ascending=False)
 
-    df = df[cols].round(decimals=2)
+    if not df.empty:
+        df = df[cols].round(decimals=2)
 
-    # filter out if any of the benchmarks have not been produced
-    df = df[has_no_nan_values(df, benchmark_cols)]
+        # filter out if any of the benchmarks have not been produced
+        df = df[has_no_nan_values(df, benchmark_cols)]
 
     return raw_data, df
 
