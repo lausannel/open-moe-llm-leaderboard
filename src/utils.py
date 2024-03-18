@@ -7,7 +7,8 @@ def my_snapshot_download(repo_id, revision, local_dir, repo_type, max_workers):
         try:
             snapshot_download(repo_id=repo_id, revision=revision, local_dir=local_dir, repo_type=repo_type, max_workers=max_workers)
             return
-        except Exception:
+        except Exception as e:
+            print(f"Failed to download {repo_id} at {revision} with error: {e}. Retrying...")
             import time
             time.sleep(60)
     return
