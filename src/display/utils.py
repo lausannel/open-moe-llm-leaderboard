@@ -20,32 +20,33 @@ class Tasks(Enum):
     # nqopen = Task("nq8", "em", "NQ Open/EM")
     # triviaqa = Task("tqa8", "em", "TriviaQA/EM")
 
-    truthfulqa_mc1 = Task("truthfulqa_mc1", "acc", "TruthQA MC1/Acc")
-    truthfulqa_mc2 = Task("truthfulqa_mc2", "acc", "TruthQA MC2/Acc")
-    truthfulqa_gen = Task("truthfulqa_gen", "rougeL_acc", "TruthQA Gen/ROUGE")
+    # truthfulqa_mc1 = Task("truthfulqa_mc1", "acc", "TruthQA MC1/Acc")
+    # truthfulqa_mc2 = Task("truthfulqa_mc2", "acc", "TruthQA MC2/Acc")
+    # truthfulqa_gen = Task("truthfulqa_gen", "rougeL_acc", "TruthQA Gen/ROUGE")
 
     xsum_r = Task("xsum_v2", "rougeL", "XSum/ROUGE")
-    xsum_f = Task("xsum_v2", "factKB", "XSum/factKB")
-    xsum_b = Task("xsum_v2", "bertscore_precision", "XSum/BERT-P")
+    # xsum_f = Task("xsum_v2", "factKB", "XSum/factKB")
+    # xsum_b = Task("xsum_v2", "bertscore_precision", "XSum/BERT-P")
 
-    cnndm_r = Task("cnndm_v2", "rougeL", "CNN-DM/ROUGE")
-    cnndm_f = Task("cnndm_v2", "factKB", "CNN-DM/factKB")
-    cnndm_b = Task("cnndm_v2", "bertscore_precision", "CNN-DM/BERT-P")
+    # cnndm_r = Task("cnndm_v2", "rougeL", "CNN-DM/ROUGE")
+    # cnndm_f = Task("cnndm_v2", "factKB", "CNN-DM/factKB")
+    # cnndm_b = Task("cnndm_v2", "bertscore_precision", "CNN-DM/BERT-P")
 
-    race = Task("race", "acc", "RACE/Acc")
-    squadv2 = Task("squadv2", "exact", "SQUaDv2/EM")
+    # race = Task("race", "acc", "RACE/Acc")
+    # squadv2 = Task("squadv2", "exact", "SQUaDv2/EM")
 
-    memotrap = Task("memo-trap_v2", "acc", "MemoTrap/Acc")
-    ifeval = Task("ifeval", "prompt_level_strict_acc", "IFEval/Acc")
+    # memotrap = Task("memo-trap_v2", "acc", "MemoTrap/Acc")
+    # ifeval = Task("ifeval", "prompt_level_strict_acc", "IFEval/Acc")
 
-    faithdial = Task("faithdial_hallu_v2", "acc", "FaithDial/Acc")
+    # faithdial = Task("faithdial_hallu_v2", "acc", "FaithDial/Acc")
 
-    halueval_qa = Task("halueval_qa", "acc", "HaluQA/Acc")
-    halueval_summ = Task("halueval_summarization", "acc", "HaluSumm/Acc")
-    halueval_dial = Task("halueval_dialogue", "acc", "HaluDial/Acc")
+    # halueval_qa = Task("halueval_qa", "acc", "HaluQA/Acc")
+    # halueval_summ = Task("halueval_summarization", "acc", "HaluSumm/Acc")
+    # halueval_dial = Task("halueval_dialogue", "acc", "HaluDial/Acc")
 
-    # XXX include me back at some point
-    selfcheck = Task("selfcheckgpt", "max-selfcheckgpt", "SelfCheckGPT")
+    # # XXX include me back at some point
+    # selfcheck = Task("selfcheckgpt", "max-selfcheckgpt", "SelfCheckGPT")
+    gsm8k = Task("gsm8k", "acc", "GSM8K")
 
 
 # These classes are for user facing column names,
