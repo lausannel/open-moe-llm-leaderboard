@@ -152,7 +152,7 @@ with demo:
     gr.Markdown(INTRODUCTION_TEXT, elem_classes="markdown-text")
 
     with gr.Tabs(elem_classes="tab-buttons") as tabs:
-        with gr.TabItem("Hallucinations Benchmark",
+        with gr.TabItem("MOE-LLM-GPU-Poor-Leaderboard Benchmark",
                         elem_id="llm-benchmark-tab-table",
                         id=0):
             with gr.Row():

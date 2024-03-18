@@ -61,28 +61,29 @@ class ColumnContent:
     dummy: bool = False
 
 auto_eval_column_dict = []
+auto_eval_column_dict.append(["system", ColumnContent, ColumnContent("System", "str", True, never_hidden=True)])
 # Init
-auto_eval_column_dict.append(["model_type_symbol", ColumnContent, ColumnContent("T", "str", True, never_hidden=True)])
-auto_eval_column_dict.append(["model", ColumnContent, ColumnContent("Model", "markdown", True, never_hidden=True)])
+# auto_eval_column_dict.append(["model_type_symbol", ColumnContent, ColumnContent("T", "str", True, never_hidden=True)])
+# auto_eval_column_dict.append(["model", ColumnContent, ColumnContent("Model", "markdown", True, never_hidden=True)])
 
-#Scores
-# auto_eval_column_dict.append(["average", ColumnContent, ColumnContent("Avg", "number", True)])
+# #Scores
+# # auto_eval_column_dict.append(["average", ColumnContent, ColumnContent("Avg", "number", True)])
 
 for task in Tasks:
     auto_eval_column_dict.append([task.name, ColumnContent, ColumnContent(task.value.col_name, "number", True)])
 
-# Model information
-auto_eval_column_dict.append(["model_type", ColumnContent, ColumnContent("Type", "str", False)])
-auto_eval_column_dict.append(["architecture", ColumnContent, ColumnContent("Architecture", "str", False)])
-auto_eval_column_dict.append(["weight_type", ColumnContent, ColumnContent("Weight type", "str", False, True)])
-auto_eval_column_dict.append(["precision", ColumnContent, ColumnContent("Precision", "str", False)])
-auto_eval_column_dict.append(["license", ColumnContent, ColumnContent("Hub License", "str", False)])
-auto_eval_column_dict.append(["params", ColumnContent, ColumnContent("#Params (B)", "number", False)])
-auto_eval_column_dict.append(["likes", ColumnContent, ColumnContent("Hub ❤️", "number", False)])
-auto_eval_column_dict.append(["still_on_hub", ColumnContent, ColumnContent("Available on the hub", "bool", False)])
-auto_eval_column_dict.append(["revision", ColumnContent, ColumnContent("Model sha", "str", False, False)])
-# Dummy column for the search bar (hidden by the custom CSS)
-auto_eval_column_dict.append(["dummy", ColumnContent, ColumnContent("model_name_for_query", "str", False, dummy=True)])
+# # Model information
+# auto_eval_column_dict.append(["model_type", ColumnContent, ColumnContent("Type", "str", False)])
+# auto_eval_column_dict.append(["architecture", ColumnContent, ColumnContent("Architecture", "str", False)])
+# auto_eval_column_dict.append(["weight_type", ColumnContent, ColumnContent("Weight type", "str", False, True)])
+# auto_eval_column_dict.append(["precision", ColumnContent, ColumnContent("Precision", "str", False)])
+# auto_eval_column_dict.append(["license", ColumnContent, ColumnContent("Hub License", "str", False)])
+# auto_eval_column_dict.append(["params", ColumnContent, ColumnContent("#Params (B)", "number", False)])
+# auto_eval_column_dict.append(["likes", ColumnContent, ColumnContent("Hub ❤️", "number", False)])
+# auto_eval_column_dict.append(["still_on_hub", ColumnContent, ColumnContent("Available on the hub", "bool", False)])
+# auto_eval_column_dict.append(["revision", ColumnContent, ColumnContent("Model sha", "str", False, False)])
+# # Dummy column for the search bar (hidden by the custom CSS)
+# auto_eval_column_dict.append(["dummy", ColumnContent, ColumnContent("model_name_for_query", "str", False, dummy=True)])
 
 # We use make dataclass to dynamically fill the scores from Tasks
 AutoEvalColumn = make_dataclass("AutoEvalColumn", auto_eval_column_dict, frozen=True)

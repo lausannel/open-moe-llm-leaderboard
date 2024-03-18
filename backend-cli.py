@@ -267,7 +267,7 @@ if __name__ == "__main__":
     #debug specific task by ping
     if local_debug:
         debug_model_names = ['mistralai/Mixtral-8x7B-Instruct-v0.1']
-        debug_model_names = ["TheBloke/Mixtral-8x7B-v0.1-GPTQ"]
+        # debug_model_names = ["TheBloke/Mixtral-8x7B-v0.1-GPTQ"]
         # debug_task_name = 'ifeval'
         debug_task_name = 'selfcheckgpt'
         task_lst = TASKS_HARNESS.copy()
