@@ -1,7 +1,6 @@
 import torch
 import os
 from transformers import AutoTokenizer
-import transformers
 from transformers import AutoModelForCausalLM
 from moe_infinity import MoE
 from typing import List, Tuple, Optional, Union
@@ -29,7 +28,7 @@ class MoEHFLM(HFLM):
         self.use_chat_template = use_chat_template
         if "device" in kwargs:
             kwargs.pop("device")
-        super().__init__(*args, **kwargs, pretrained=pretrained, device="cuda:0")  # Assuming HFLM accepts a 'pretrained' arg and handles it
+        super().__init__(*args, **kwargs, pretrained=pretrained, device_map="cuda:0")  # Assuming HFLM accepts a 'pretrained' arg and handles it
         # self._create_model()
 
     def _create_model(self, *args, **kwargs):
@@ -43,7 +42,8 @@ class MoEHFLM(HFLM):
         }
         # Update default config with any user-provided config
         final_moe_config = {**default_moe_config, **self.moe_config}
-        self._model = MoE(self.checkpoint, final_moe_config)
+        # self._model = MoE(self.checkpoint, final_moe_config)
+        self._model = AutoModelForCausalLM.from_pretrained(self.checkpoint, torch_dtype=torch.float16, device_map="auto")
 
     @property
     def max_length(self):

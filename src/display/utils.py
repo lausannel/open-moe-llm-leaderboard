@@ -24,7 +24,7 @@ class Tasks(Enum):
     # truthfulqa_mc2 = Task("truthfulqa_mc2", "acc", "TruthQA MC2/Acc")
     # truthfulqa_gen = Task("truthfulqa_gen", "rougeL_acc", "TruthQA Gen/ROUGE")
 
-    xsum_r = Task("xsum_v2", "rougeL", "XSum/ROUGE")
+    # xsum_r = Task("xsum_v2", "rougeL", "XSum/ROUGE")
     # xsum_f = Task("xsum_v2", "factKB", "XSum/factKB")
     # xsum_b = Task("xsum_v2", "bertscore_precision", "XSum/BERT-P")
 
@@ -45,8 +45,8 @@ class Tasks(Enum):
     # halueval_dial = Task("halueval_dialogue", "acc", "HaluDial/Acc")
 
     # # XXX include me back at some point
-    # selfcheck = Task("selfcheckgpt", "max-selfcheckgpt", "SelfCheckGPT")
-    gsm8k = Task("gsm8k", "acc", "GSM8K")
+    selfcheck = Task("selfcheckgpt", "max-selfcheckgpt", "SelfCheckGPT")
+    mmlu = Task("hendrycksTest", "acc", "MMLU")
 
 
 # These classes are for user facing column names,
@@ -62,7 +62,8 @@ class ColumnContent:
     dummy: bool = False
 
 auto_eval_column_dict = []
-auto_eval_column_dict.append(["system", ColumnContent, ColumnContent("System", "str", True, never_hidden=True)])
+auto_eval_column_dict.append(["model", ColumnContent, ColumnContent("Model", "str", True, never_hidden=True)])
+auto_eval_column_dict.append(["hardware", ColumnContent, ColumnContent("Hardware", "str", True, never_hidden=True)])
 # Init
 # auto_eval_column_dict.append(["model_type_symbol", ColumnContent, ColumnContent("T", "str", True, never_hidden=True)])
 # auto_eval_column_dict.append(["model", ColumnContent, ColumnContent("Model", "markdown", True, never_hidden=True)])

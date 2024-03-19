@@ -2,6 +2,7 @@
 
 import os
 import json
+import argparse
 
 import socket
 import random
@@ -33,7 +34,8 @@ def my_set_eval_request(api, eval_request, set_to_status, hf_repo, local_dir):
         try:
             set_eval_request(api=api, eval_request=eval_request, set_to_status=set_to_status, hf_repo=hf_repo, local_dir=local_dir)
             return
-        except Exception:
+        except Exception as e:
+            print(f"Error setting eval request to {set_to_status}: {e}. Retrying in 60 seconds")
             time.sleep(60)
     return
 
@@ -262,14 +264,21 @@ def process_pending_requests() -> bool:
     return True
 
 
+def get_args():
+    parser = argparse.ArgumentParser(description='Run the backend')
+    parser.add_argument('--debug', action='store_true', help='Run in debug mode')
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
-    local_debug = True
+    args = get_args()
+    local_debug = args.debug
     #debug specific task by ping
     if local_debug:
         debug_model_names = ['mistralai/Mixtral-8x7B-Instruct-v0.1']
         # debug_model_names = ["TheBloke/Mixtral-8x7B-v0.1-GPTQ"]
         # debug_task_name = 'ifeval'
-        debug_task_name = 'selfcheckgpt'
+        debug_task_name = 'mmlu'
         task_lst = TASKS_HARNESS.copy()
         for task in task_lst:
             for debug_model_name in debug_model_names:
@@ -279,31 +288,24 @@ if __name__ == "__main__":
                 eval_request = EvalRequest(model=debug_model_name, private=False, status='', json_filepath='', precision='float16')
                 results = process_evaluation(task, eval_request)
 
-    wait = True
-    hard_task_lst = None
-    if socket.gethostname() in {'hamburg', 'neuromancer'} or os.path.isdir("/home/pminervi"):
-        wait = False
-        hard_task_lst = ['nq', 'trivia', 'tqa']
+    while True:
+        res = False
 
-    if wait:
-        time.sleep(60 * random.randint(5, 10))
-
-    res = False
-
-    if random.randint(0, 10) == 0:
+        # if random.randint(0, 10) == 0:
         res = process_pending_requests()
+        print(f"waiting for 60 seconds")
         time.sleep(60)
 
-    if res is False:
-        if random.randint(0, 5) == 0:
-            res = maybe_refresh_results(100, hard_task_lst=hard_task_lst)
-        else:
-            res = process_finished_requests(100, hard_task_lst=hard_task_lst)
+        # if res is False:
+        #     if random.randint(0, 5) == 0:
+        #         res = maybe_refresh_results(100)
+        #     else:
+        #         res = process_finished_requests(100)
 
-    time.sleep(60)
+        # time.sleep(60)
 
-    if res is False:
-        if random.randint(0, 5) == 0:
-            res = maybe_refresh_results(0, hard_task_lst=hard_task_lst)
-        else:
-            res = process_finished_requests(0, hard_task_lst=hard_task_lst)
+        # if res is False:
+        #     if random.randint(0, 5) == 0:
+        #         res = maybe_refresh_results(0)
+        #     else:
+        #         res = process_finished_requests(0)

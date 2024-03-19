@@ -33,6 +33,7 @@ def run_evaluation(eval_request: EvalRequest, task_names, num_fewshot, batch_siz
 
     print(f"Selected Tasks: {task_names}")
     print(f"Eval Request: {eval_request.get_model_args()}")
+    print(f"Num Fewshot: {num_fewshot}, Batch Size: {batch_size}, Device: {device}, Use Cache: {use_cache}, Limit: {limit}")
     # hf-chat is implemented to use apply_chat_template
     results = evaluator.simple_evaluate(model="moe-infinity",  # "hf-causal-experimental",  # "hf-causal", hf-chat
                                         model_args=eval_request.get_model_args(),

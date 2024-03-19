@@ -35,7 +35,7 @@ class Tasks(Enum):
     # task8 = Task("xsum", "rougeL", "XSum", 2)
     # task9 = Task("cnndm", "rougeL", "CNN/DM", 2)
 
-    task8_1 = Task("xsum_v2", "rougeL", "XSum", 0)
+    # task8_1 = Task("xsum_v2", "rougeL", "XSum", 0)
     # task9_1 = Task("cnndm_v2", "rougeL", "CNN/DM", 0)
 
     # task10 = Task("memo-trap", "acc", "memo-trap", 0)
@@ -43,7 +43,7 @@ class Tasks(Enum):
 
     # task13 = Task("ifeval", "prompt_level_strict_acc", "IFEval", 0)
 
-    # task14 = Task("selfcheckgpt", "max-selfcheckgpt", "SelfCheckGPT", 0)
+    task14 = Task("selfcheckgpt", "max-selfcheckgpt", "SelfCheckGPT", 0)
 
     # task15 = Task("fever10", "acc", "FEVER", 16)
     # task15_1 = Task("fever11", "acc", "FEVER", 8)
@@ -56,7 +56,7 @@ class Tasks(Enum):
     # task19 = Task("faithdial_hallu_v2", "acc", "FaithDial", 8)
 
     # task20 = Task("race", "acc", "RACE", 0)
-    task21 = Task("gsm8k", "acc", "GSM8K", 0)
+    task21 = Task("mmlu", "acc", "MMLU", 5)
 
 
 EVAL_REQUESTS_PATH_BACKEND = os.path.join(CACHE_PATH, "eval-queue-bk")
