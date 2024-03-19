@@ -27,6 +27,9 @@ import time
 
 import logging
 import pprint
+from lm_eval.utils import eval_logger
+
+eval_logger.setLevel(logging.WARNING)
 
 
 def my_set_eval_request(api, eval_request, set_to_status, hf_repo, local_dir):
@@ -110,7 +113,7 @@ def request_to_result_name(request: EvalRequest) -> str:
 
 
 def process_evaluation(task: Task, eval_request: EvalRequest) -> dict:
-    batch_size = 2
+    batch_size = 16
     try:
         results = run_evaluation(
             eval_request=eval_request,
