@@ -13,17 +13,21 @@ from src.backend.envs import Tasks as BackendTasks
 from src.display.utils import Tasks
 
 
-def get_leaderboard_df(results_path: str,
-                       requests_path: str,
-                       requests_path_open_llm: str,
-                       cols: list,
-                       benchmark_cols: list,
-                       is_backend: bool = False) -> tuple[list[EvalResult], pd.DataFrame]:
+def get_leaderboard_df(
+    results_path: str,
+    requests_path: str,
+    requests_path_open_llm: str,
+    cols: list,
+    benchmark_cols: list,
+    is_backend: bool = False,
+) -> tuple[list[EvalResult], pd.DataFrame]:
     # Returns a list of EvalResult
     raw_data: list[EvalResult] = get_raw_eval_results(results_path, requests_path, requests_path_open_llm)
     if requests_path_open_llm != "":
         for result_idx in tqdm(range(len(raw_data)), desc="updating model type with open llm leaderboard"):
-            raw_data[result_idx] = update_model_type_with_open_llm_request_file(raw_data[result_idx], requests_path_open_llm)
+            raw_data[result_idx] = update_model_type_with_open_llm_request_file(
+                raw_data[result_idx], requests_path_open_llm
+            )
 
     all_data_json_ = [v.to_dict() for v in raw_data if v.is_complete()]
 

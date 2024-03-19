@@ -15,7 +15,9 @@ from src.backend.manage_requests import get_eval_requests
 from src.backend.manage_requests import EvalRequest
 
 
-def add_new_eval(model: str, base_model: str, revision: str, precision: str, private: bool, weight_type: str, model_type: str):
+def add_new_eval(
+    model: str, base_model: str, revision: str, precision: str, private: bool, weight_type: str, model_type: str
+):
     REQUESTED_MODELS, USERS_TO_SUBMISSION_DATES = already_submitted_models(EVAL_REQUESTS_PATH)
 
     user_name = ""
@@ -37,7 +39,9 @@ def add_new_eval(model: str, base_model: str, revision: str, precision: str, pri
 
     # Is the model on the hub?
     if weight_type in ["Delta", "Adapter"]:
-        base_model_on_hub, error, _ = is_model_on_hub(model_name=base_model, revision=revision, token=H4_TOKEN, test_tokenizer=True)
+        base_model_on_hub, error, _ = is_model_on_hub(
+            model_name=base_model, revision=revision, token=H4_TOKEN, test_tokenizer=True
+        )
         if not base_model_on_hub:
             print(f'Base model "{base_model}" {error}')
             return
@@ -57,7 +61,7 @@ def add_new_eval(model: str, base_model: str, revision: str, precision: str, pri
 
     model_size = get_model_size(model_info=model_info, precision=precision)
 
-    license = 'none'
+    license = "none"
     try:
         license = model_info.cardData["license"]
     except Exception:
@@ -101,13 +105,20 @@ def add_new_eval(model: str, base_model: str, revision: str, precision: str, pri
         f.write(json.dumps(eval_entry))
 
     print("Uploading eval file")
-    API.upload_file(path_or_fileobj=out_path, path_in_repo=out_path.split("eval-queue/")[1],
-                    repo_id=QUEUE_REPO, repo_type="dataset", commit_message=f"Add {model} to eval queue")
+    API.upload_file(
+        path_or_fileobj=out_path,
+        path_in_repo=out_path.split("eval-queue/")[1],
+        repo_id=QUEUE_REPO,
+        repo_type="dataset",
+        commit_message=f"Add {model} to eval queue",
+    )
 
     # Remove the local file
     os.remove(out_path)
 
-    print("Your request has been submitted to the evaluation queue!\nPlease wait for up to an hour for the model to show in the PENDING list.")
+    print(
+        "Your request has been submitted to the evaluation queue!\nPlease wait for up to an hour for the model to show in the PENDING list."
+    )
     return
 
 
@@ -122,12 +133,14 @@ def main():
     def custom_filter(m) -> bool:
         # res = m.pipeline_tag in {'text-generation'} and 'en' in m.tags and m.private is False
         # res = m.pipeline_tag in {'text-generation'} and 'en' in m.tags and m.private is False and 'mistralai/' in m.id
-        res = 'mistralai/' in m.id
+        res = "mistralai/" in m.id
         return res
 
     filtered_model_lst = sorted([m for m in model_lst if custom_filter(m)], key=lambda m: m.downloads, reverse=True)
 
-    snapshot_download(repo_id=QUEUE_REPO, revision="main", local_dir=EVAL_REQUESTS_PATH_BACKEND, repo_type="dataset", max_workers=60)
+    snapshot_download(
+        repo_id=QUEUE_REPO, revision="main", local_dir=EVAL_REQUESTS_PATH_BACKEND, repo_type="dataset", max_workers=60
+    )
 
     PENDING_STATUS = "PENDING"
     RUNNING_STATUS = "RUNNING"
@@ -137,7 +150,9 @@ def main():
     status = [PENDING_STATUS, RUNNING_STATUS, FINISHED_STATUS, FAILED_STATUS]
 
     # Get all eval requests
-    eval_requests: list[EvalRequest] = get_eval_requests(job_status=status, hf_repo=QUEUE_REPO, local_dir=EVAL_REQUESTS_PATH_BACKEND)
+    eval_requests: list[EvalRequest] = get_eval_requests(
+        job_status=status, hf_repo=QUEUE_REPO, local_dir=EVAL_REQUESTS_PATH_BACKEND
+    )
 
     requested_model_names = {e.model for e in eval_requests}
 
@@ -146,25 +161,33 @@ def main():
     for i in range(min(200, len(filtered_model_lst))):
         model = filtered_model_lst[i]
 
-        print(f'Considering {model.id} ..')
+        print(f"Considering {model.id} ..")
 
-        is_finetuned = any(tag.startswith('base_model:') for tag in model.tags)
+        is_finetuned = any(tag.startswith("base_model:") for tag in model.tags)
 
-        model_type = 'pretrained'
+        model_type = "pretrained"
         if is_finetuned:
             model_type = "fine-tuned"
 
-        is_instruction_tuned = 'nstruct' in model.id
+        is_instruction_tuned = "nstruct" in model.id
         if is_instruction_tuned:
             model_type = "instruction-tuned"
 
         if model.id not in requested_model_names:
 
-            if 'mage' not in model.id:
-                add_new_eval(model=model.id, base_model='', revision='main', precision='float32', private=False, weight_type='Original', model_type=model_type)
+            if "mage" not in model.id:
+                add_new_eval(
+                    model=model.id,
+                    base_model="",
+                    revision="main",
+                    precision="float32",
+                    private=False,
+                    weight_type="Original",
+                    model_type=model_type,
+                )
                 time.sleep(10)
         else:
-            print(f'Model {model.id} already added, not adding it to the queue again.')
+            print(f"Model {model.id} already added, not adding it to the queue again.")
 
 
 if __name__ == "__main__":

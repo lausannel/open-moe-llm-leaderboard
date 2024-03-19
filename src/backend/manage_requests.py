@@ -17,24 +17,27 @@ class EvalRequest:
     weight_type: str = "Original"
     model_type: str = ""  # pretrained, finetuned, with RL
     precision: str = ""  # float16, bfloat16
-    base_model: Optional[str] = None # for adapter models
-    revision: str = "main" # commit
-    submitted_time: Optional[str] = "2022-05-18T11:40:22.519222"  # random date just so that we can still order requests by date
+    base_model: Optional[str] = None  # for adapter models
+    revision: str = "main"  # commit
+    submitted_time: Optional[str] = (
+        "2022-05-18T11:40:22.519222"  # random date just so that we can still order requests by date
+    )
     model_type: Optional[str] = None
     likes: Optional[int] = 0
     params: Optional[int] = None
     license: Optional[str] = ""
+
     def get_model_args(self) -> str:
-        model_args = f"pretrained={self.model},revision={self.revision},parallelize=True" # ,max_length=4096"
+        model_args = f"pretrained={self.model},revision={self.revision},parallelize=True"  # ,max_length=4096"
 
         if self.precision in ["float16", "float32", "bfloat16"]:
             model_args += f",dtype={self.precision}"
-        # Quantized models need some added config, the install of bits and bytes, etc
-        #elif self.precision == "8bit":
-        #    model_args += ",load_in_8bit=True"
-        #elif self.precision == "4bit":
-        #    model_args += ",load_in_4bit=True"
-        #elif self.precision == "GPTQ":
+            # Quantized models need some added config, the install of bits and bytes, etc
+            # elif self.precision == "8bit":
+            #    model_args += ",load_in_8bit=True"
+            # elif self.precision == "4bit":
+            #    model_args += ",load_in_4bit=True"
+            # elif self.precision == "GPTQ":
             # A GPTQ model does not need dtype to be specified,
             # it will be inferred from the config
             pass
@@ -55,8 +58,12 @@ def set_eval_request(api: HfApi, eval_request: EvalRequest, set_to_status: str, 
     with open(json_filepath, "w") as f:
         f.write(json.dumps(data))
 
-    api.upload_file(path_or_fileobj=json_filepath, path_in_repo=json_filepath.replace(local_dir, ""),
-                    repo_id=hf_repo, repo_type="dataset")
+    api.upload_file(
+        path_or_fileobj=json_filepath,
+        path_in_repo=json_filepath.replace(local_dir, ""),
+        repo_id=hf_repo,
+        repo_type="dataset",
+    )
 
 
 def get_eval_requests(job_status: list, local_dir: str, hf_repo: str, do_download: bool = True) -> list[EvalRequest]:
@@ -68,7 +75,9 @@ def get_eval_requests(job_status: list, local_dir: str, hf_repo: str, do_downloa
         `list[EvalRequest]`: a list of model info dicts.
     """
     if do_download:
-        my_snapshot_download(repo_id=hf_repo, revision="main", local_dir=local_dir, repo_type="dataset", max_workers=60)
+        my_snapshot_download(
+            repo_id=hf_repo, revision="main", local_dir=local_dir, repo_type="dataset", max_workers=60
+        )
 
     json_files = glob.glob(f"{local_dir}/**/*.json", recursive=True)
 
@@ -81,8 +90,8 @@ def get_eval_requests(job_status: list, local_dir: str, hf_repo: str, do_downloa
             # breakpoint()
             data["json_filepath"] = json_filepath
 
-            if 'job_id' in data:
-                del data['job_id']
+            if "job_id" in data:
+                del data["job_id"]
 
             eval_request = EvalRequest(**data)
             eval_requests.append(eval_request)
@@ -90,10 +99,20 @@ def get_eval_requests(job_status: list, local_dir: str, hf_repo: str, do_downloa
     return eval_requests
 
 
-def check_completed_evals(api: HfApi, hf_repo: str, local_dir: str, checked_status: str, completed_status: str,
-                          failed_status: str, hf_repo_results: str, local_dir_results: str):
+def check_completed_evals(
+    api: HfApi,
+    hf_repo: str,
+    local_dir: str,
+    checked_status: str,
+    completed_status: str,
+    failed_status: str,
+    hf_repo_results: str,
+    local_dir_results: str,
+):
     """Checks if the currently running evals are completed, if yes, update their status on the hub."""
-    my_snapshot_download(repo_id=hf_repo_results, revision="main", local_dir=local_dir_results, repo_type="dataset", max_workers=60)
+    my_snapshot_download(
+        repo_id=hf_repo_results, revision="main", local_dir=local_dir_results, repo_type="dataset", max_workers=60
+    )
 
     running_evals = get_eval_requests([checked_status], hf_repo=hf_repo, local_dir=local_dir)
 
@@ -109,5 +128,3 @@ def check_completed_evals(api: HfApi, hf_repo: str, local_dir: str, checked_stat
         if output_file_exists:
             print(f"EXISTS output file exists for {model} setting it to {completed_status}")
             set_eval_request(api, eval_request, completed_status, hf_repo, local_dir)
-
-

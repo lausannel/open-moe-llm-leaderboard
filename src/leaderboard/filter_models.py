@@ -29,9 +29,9 @@ def flag_models(leaderboard_data: list[dict]):
                 FLAGGED_MODELS[model_data["model_name_for_query"]],
                 f"See discussion #{issue_num}",
             )
-            model_data[
-                AutoEvalColumn.model.name
-            ] = f"{model_data[AutoEvalColumn.model.name]} has been flagged! {issue_link}"
+            model_data[AutoEvalColumn.model.name] = (
+                f"{model_data[AutoEvalColumn.model.name]} has been flagged! {issue_link}"
+            )
 
 
 def remove_forbidden_models(leaderboard_data: list[dict]):

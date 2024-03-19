@@ -14,8 +14,12 @@ from src.leaderboard.read_evals import get_raw_eval_results
 from src.backend.manage_requests import EvalRequest
 from src.leaderboard.read_evals import EvalResult
 
-snapshot_download(repo_id=QUEUE_REPO, local_dir=EVAL_REQUESTS_PATH, repo_type="dataset", tqdm_class=None, etag_timeout=30)
-snapshot_download(repo_id=RESULTS_REPO, local_dir=EVAL_RESULTS_PATH, repo_type="dataset", tqdm_class=None, etag_timeout=30)
+snapshot_download(
+    repo_id=QUEUE_REPO, local_dir=EVAL_REQUESTS_PATH, repo_type="dataset", tqdm_class=None, etag_timeout=30
+)
+snapshot_download(
+    repo_id=RESULTS_REPO, local_dir=EVAL_RESULTS_PATH, repo_type="dataset", tqdm_class=None, etag_timeout=30
+)
 
 PENDING_STATUS = "PENDING"
 RUNNING_STATUS = "RUNNING"
@@ -40,7 +44,9 @@ def request_to_result_name(request: EvalRequest) -> str:
 
 
 # Get all eval request that are FINISHED, if you want to run other evals, change this parameter
-eval_requests: list[EvalRequest] = get_eval_requests(job_status=current_finished_status, hf_repo=QUEUE_REPO, local_dir=EVAL_REQUESTS_PATH_BACKEND)
+eval_requests: list[EvalRequest] = get_eval_requests(
+    job_status=current_finished_status, hf_repo=QUEUE_REPO, local_dir=EVAL_REQUESTS_PATH_BACKEND
+)
 # Sort the evals by priority (first submitted first run)
 eval_requests: list[EvalRequest] = sort_models_by_priority(api=API, models=eval_requests)
 
@@ -49,8 +55,8 @@ eval_results: list[EvalResult] = get_raw_eval_results(EVAL_RESULTS_PATH, EVAL_RE
 result_name_to_request = {request_to_result_name(r): r for r in eval_requests}
 result_name_to_result = {r.eval_name: r for r in eval_results}
 
-print('Requests', sorted(result_name_to_request.keys()))
-print('Results', sorted(result_name_to_result.keys()))
+print("Requests", sorted(result_name_to_request.keys()))
+print("Results", sorted(result_name_to_result.keys()))
 
 for eval_request in eval_requests:
     result_name: str = request_to_result_name(eval_request)
@@ -63,7 +69,7 @@ for eval_request in eval_requests:
         task_name = task.benchmark
 
         if task_name not in eval_result.results:
-            print('RUN THIS ONE!', result_name, task_name)
+            print("RUN THIS ONE!", result_name, task_name)
 
 raw_data = get_raw_eval_results(EVAL_RESULTS_PATH, EVAL_REQUESTS_PATH)
 all_data_json = [v.to_dict() for v in raw_data if v.is_complete()]

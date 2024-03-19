@@ -32,7 +32,9 @@ import pprint
 def my_set_eval_request(api, eval_request, set_to_status, hf_repo, local_dir):
     for i in range(10):
         try:
-            set_eval_request(api=api, eval_request=eval_request, set_to_status=set_to_status, hf_repo=hf_repo, local_dir=local_dir)
+            set_eval_request(
+                api=api, eval_request=eval_request, set_to_status=set_to_status, hf_repo=hf_repo, local_dir=local_dir
+            )
             return
         except Exception as e:
             print(f"Error setting eval request to {set_to_status}: {e}. Retrying in 60 seconds")
@@ -53,19 +55,32 @@ FAILED_STATUS = "FAILED"
 TASKS_HARNESS = [task.value for task in Tasks]
 
 
-my_snapshot_download(repo_id=RESULTS_REPO, revision="main", local_dir=EVAL_RESULTS_PATH_BACKEND, repo_type="dataset", max_workers=60)
-my_snapshot_download(repo_id=QUEUE_REPO, revision="main", local_dir=EVAL_REQUESTS_PATH_BACKEND, repo_type="dataset", max_workers=60)
+my_snapshot_download(
+    repo_id=RESULTS_REPO, revision="main", local_dir=EVAL_RESULTS_PATH_BACKEND, repo_type="dataset", max_workers=60
+)
+my_snapshot_download(
+    repo_id=QUEUE_REPO, revision="main", local_dir=EVAL_REQUESTS_PATH_BACKEND, repo_type="dataset", max_workers=60
+)
 
 
 def sanity_checks():
-    print(f'Device: {DEVICE}')
+    print(f"Device: {DEVICE}")
 
     # pull the eval dataset from the hub and parse any eval requests
     # check completed evals and set them to finished
-    my_snapshot_download(repo_id=QUEUE_REPO, revision="main", local_dir=EVAL_REQUESTS_PATH_BACKEND, repo_type="dataset", max_workers=60)
-    check_completed_evals(api=API, checked_status=RUNNING_STATUS, completed_status=FINISHED_STATUS,
-                          failed_status=FAILED_STATUS, hf_repo=QUEUE_REPO, local_dir=EVAL_REQUESTS_PATH_BACKEND,
-                          hf_repo_results=RESULTS_REPO, local_dir_results=EVAL_RESULTS_PATH_BACKEND)
+    my_snapshot_download(
+        repo_id=QUEUE_REPO, revision="main", local_dir=EVAL_REQUESTS_PATH_BACKEND, repo_type="dataset", max_workers=60
+    )
+    check_completed_evals(
+        api=API,
+        checked_status=RUNNING_STATUS,
+        completed_status=FINISHED_STATUS,
+        failed_status=FAILED_STATUS,
+        hf_repo=QUEUE_REPO,
+        local_dir=EVAL_REQUESTS_PATH_BACKEND,
+        hf_repo_results=RESULTS_REPO,
+        local_dir_results=EVAL_RESULTS_PATH_BACKEND,
+    )
     return
 
 
@@ -97,29 +112,51 @@ def request_to_result_name(request: EvalRequest) -> str:
 def process_evaluation(task: Task, eval_request: EvalRequest) -> dict:
     batch_size = 2
     try:
-        results = run_evaluation(eval_request=eval_request, task_names=[task.benchmark], num_fewshot=task.num_fewshot,
-                                 batch_size=batch_size, device=DEVICE, use_cache=None, limit=LIMIT)
+        results = run_evaluation(
+            eval_request=eval_request,
+            task_names=[task.benchmark],
+            num_fewshot=task.num_fewshot,
+            batch_size=batch_size,
+            device=DEVICE,
+            use_cache=None,
+            limit=LIMIT,
+        )
     except RuntimeError as e:
         if "No executable batch size found" in str(e):
             batch_size = 1
-            results = run_evaluation(eval_request=eval_request, task_names=[task.benchmark], num_fewshot=task.num_fewshot,
-                                     batch_size=batch_size, device=DEVICE, use_cache=None, limit=LIMIT)
+            results = run_evaluation(
+                eval_request=eval_request,
+                task_names=[task.benchmark],
+                num_fewshot=task.num_fewshot,
+                batch_size=batch_size,
+                device=DEVICE,
+                use_cache=None,
+                limit=LIMIT,
+            )
         else:
             raise
 
-    print('RESULTS', results)
+    print("RESULTS", results)
 
-    dumped = json.dumps(results, indent=2, default=lambda o: '<not serializable>')
+    dumped = json.dumps(results, indent=2, default=lambda o: "<not serializable>")
     print(dumped)
 
-    output_path = os.path.join(EVAL_RESULTS_PATH_BACKEND, *eval_request.model.split("/"), f"results_{datetime.now()}.json")
+    output_path = os.path.join(
+        EVAL_RESULTS_PATH_BACKEND, *eval_request.model.split("/"), f"results_{datetime.now()}.json"
+    )
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, "w") as f:
         f.write(dumped)
 
-    my_snapshot_download(repo_id=RESULTS_REPO, revision="main", local_dir=EVAL_RESULTS_PATH_BACKEND, repo_type="dataset", max_workers=60)
-    API.upload_file(path_or_fileobj=output_path, path_in_repo=f"{eval_request.model}/results_{datetime.now()}.json",
-                    repo_id=RESULTS_REPO, repo_type="dataset")
+    my_snapshot_download(
+        repo_id=RESULTS_REPO, revision="main", local_dir=EVAL_RESULTS_PATH_BACKEND, repo_type="dataset", max_workers=60
+    )
+    API.upload_file(
+        path_or_fileobj=output_path,
+        path_in_repo=f"{eval_request.model}/results_{datetime.now()}.json",
+        repo_id=RESULTS_REPO,
+        repo_type="dataset",
+    )
     return results
 
 
@@ -129,7 +166,9 @@ def process_finished_requests(thr: int, hard_task_lst: Optional[list[str]] = Non
     current_finished_status = [FINISHED_STATUS, FAILED_STATUS]
 
     # Get all eval request that are FINISHED, if you want to run other evals, change this parameter
-    eval_requests: list[EvalRequest] = get_eval_requests(job_status=current_finished_status, hf_repo=QUEUE_REPO, local_dir=EVAL_REQUESTS_PATH_BACKEND)
+    eval_requests: list[EvalRequest] = get_eval_requests(
+        job_status=current_finished_status, hf_repo=QUEUE_REPO, local_dir=EVAL_REQUESTS_PATH_BACKEND
+    )
     # Sort the evals by priority (first submitted, first run)
     eval_requests: list[EvalRequest] = sort_models_by_priority(api=API, models=eval_requests)
 
@@ -145,7 +184,9 @@ def process_finished_requests(thr: int, hard_task_lst: Optional[list[str]] = Non
             result_name: str = request_to_result_name(eval_request)
 
             # Check the corresponding result
-            eval_result: Optional[EvalResult] = result_name_to_result[result_name] if result_name in result_name_to_result else None
+            eval_result: Optional[EvalResult] = (
+                result_name_to_result[result_name] if result_name in result_name_to_result else None
+            )
 
             # breakpoint()
 
@@ -163,13 +204,37 @@ def process_finished_requests(thr: int, hard_task_lst: Optional[list[str]] = Non
                 if (eval_result is None or task_name not in eval_result.results) and do_run_task:
                     eval_request: EvalRequest = result_name_to_request[result_name]
 
-                    my_snapshot_download(repo_id=QUEUE_REPO, revision="main", local_dir=EVAL_REQUESTS_PATH_BACKEND, repo_type="dataset", max_workers=60)
-                    my_set_eval_request(api=API, eval_request=eval_request, set_to_status=RUNNING_STATUS, hf_repo=QUEUE_REPO, local_dir=EVAL_REQUESTS_PATH_BACKEND)
+                    my_snapshot_download(
+                        repo_id=QUEUE_REPO,
+                        revision="main",
+                        local_dir=EVAL_REQUESTS_PATH_BACKEND,
+                        repo_type="dataset",
+                        max_workers=60,
+                    )
+                    my_set_eval_request(
+                        api=API,
+                        eval_request=eval_request,
+                        set_to_status=RUNNING_STATUS,
+                        hf_repo=QUEUE_REPO,
+                        local_dir=EVAL_REQUESTS_PATH_BACKEND,
+                    )
 
                     results = process_evaluation(task, eval_request)
 
-                    my_snapshot_download(repo_id=QUEUE_REPO, revision="main", local_dir=EVAL_REQUESTS_PATH_BACKEND, repo_type="dataset", max_workers=60)
-                    my_set_eval_request(api=API, eval_request=eval_request, set_to_status=FINISHED_STATUS, hf_repo=QUEUE_REPO, local_dir=EVAL_REQUESTS_PATH_BACKEND)
+                    my_snapshot_download(
+                        repo_id=QUEUE_REPO,
+                        revision="main",
+                        local_dir=EVAL_REQUESTS_PATH_BACKEND,
+                        repo_type="dataset",
+                        max_workers=60,
+                    )
+                    my_set_eval_request(
+                        api=API,
+                        eval_request=eval_request,
+                        set_to_status=FINISHED_STATUS,
+                        hf_repo=QUEUE_REPO,
+                        local_dir=EVAL_REQUESTS_PATH_BACKEND,
+                    )
 
                     return True
 
@@ -182,7 +247,9 @@ def maybe_refresh_results(thr: int, hard_task_lst: Optional[list[str]] = None) -
     current_finished_status = [PENDING_STATUS, FINISHED_STATUS, FAILED_STATUS]
 
     # Get all eval request that are FINISHED, if you want to run other evals, change this parameter
-    eval_requests: list[EvalRequest] = get_eval_requests(job_status=current_finished_status, hf_repo=QUEUE_REPO, local_dir=EVAL_REQUESTS_PATH_BACKEND)
+    eval_requests: list[EvalRequest] = get_eval_requests(
+        job_status=current_finished_status, hf_repo=QUEUE_REPO, local_dir=EVAL_REQUESTS_PATH_BACKEND
+    )
     # Sort the evals by priority (first submitted, first run)
     eval_requests: list[EvalRequest] = sort_models_by_priority(api=API, models=eval_requests)
 
@@ -198,7 +265,9 @@ def maybe_refresh_results(thr: int, hard_task_lst: Optional[list[str]] = None) -
             result_name: str = request_to_result_name(eval_request)
 
             # Check the corresponding result
-            eval_result: Optional[EvalResult] = result_name_to_result[result_name] if result_name in result_name_to_result else None
+            eval_result: Optional[EvalResult] = (
+                result_name_to_result[result_name] if result_name in result_name_to_result else None
+            )
 
             task_lst = TASKS_HARNESS.copy()
             random.shuffle(task_lst)
@@ -211,18 +280,46 @@ def maybe_refresh_results(thr: int, hard_task_lst: Optional[list[str]] = None) -
                 if hard_task_lst is None or any(ss in task_name for ss in hard_task_lst):
                     do_run_task = True
 
-                task_lst = ['nq', 'trivia', 'tqa', 'self']
-                if (eval_result is None or do_run_task or task_name not in eval_result.results or
-                        any(ss in task_name for ss in task_lst)):
+                task_lst = ["nq", "trivia", "tqa", "self"]
+                if (
+                    eval_result is None
+                    or do_run_task
+                    or task_name not in eval_result.results
+                    or any(ss in task_name for ss in task_lst)
+                ):
                     eval_request: EvalRequest = result_name_to_request[result_name]
 
-                    my_snapshot_download(repo_id=QUEUE_REPO, revision="main", local_dir=EVAL_REQUESTS_PATH_BACKEND, repo_type="dataset", max_workers=60)
-                    my_set_eval_request(api=API, eval_request=eval_request, set_to_status=RUNNING_STATUS, hf_repo=QUEUE_REPO, local_dir=EVAL_REQUESTS_PATH_BACKEND)
+                    my_snapshot_download(
+                        repo_id=QUEUE_REPO,
+                        revision="main",
+                        local_dir=EVAL_REQUESTS_PATH_BACKEND,
+                        repo_type="dataset",
+                        max_workers=60,
+                    )
+                    my_set_eval_request(
+                        api=API,
+                        eval_request=eval_request,
+                        set_to_status=RUNNING_STATUS,
+                        hf_repo=QUEUE_REPO,
+                        local_dir=EVAL_REQUESTS_PATH_BACKEND,
+                    )
 
                     results = process_evaluation(task, eval_request)
 
-                    my_snapshot_download(repo_id=QUEUE_REPO, revision="main", local_dir=EVAL_REQUESTS_PATH_BACKEND, repo_type="dataset", max_workers=60)
-                    my_set_eval_request(api=API, eval_request=eval_request, set_to_status=FINISHED_STATUS, hf_repo=QUEUE_REPO, local_dir=EVAL_REQUESTS_PATH_BACKEND)
+                    my_snapshot_download(
+                        repo_id=QUEUE_REPO,
+                        revision="main",
+                        local_dir=EVAL_REQUESTS_PATH_BACKEND,
+                        repo_type="dataset",
+                        max_workers=60,
+                    )
+                    my_set_eval_request(
+                        api=API,
+                        eval_request=eval_request,
+                        set_to_status=FINISHED_STATUS,
+                        hf_repo=QUEUE_REPO,
+                        local_dir=EVAL_REQUESTS_PATH_BACKEND,
+                    )
 
                     return True
 
@@ -235,7 +332,9 @@ def process_pending_requests() -> bool:
     current_pending_status = [PENDING_STATUS]
 
     # Get all eval request that are PENDING, if you want to run other evals, change this parameter
-    eval_requests = get_eval_requests(job_status=current_pending_status, hf_repo=QUEUE_REPO, local_dir=EVAL_REQUESTS_PATH_BACKEND)
+    eval_requests = get_eval_requests(
+        job_status=current_pending_status, hf_repo=QUEUE_REPO, local_dir=EVAL_REQUESTS_PATH_BACKEND
+    )
     # Sort the evals by priority (first submitted, first run)
     eval_requests = sort_models_by_priority(api=API, models=eval_requests)
 
@@ -249,8 +348,16 @@ def process_pending_requests() -> bool:
     eval_request = eval_requests[0]
     pp.pprint(eval_request)
 
-    my_snapshot_download(repo_id=QUEUE_REPO, revision="main", local_dir=EVAL_REQUESTS_PATH_BACKEND, repo_type="dataset", max_workers=60)
-    my_set_eval_request(api=API, eval_request=eval_request, set_to_status=RUNNING_STATUS, hf_repo=QUEUE_REPO, local_dir=EVAL_REQUESTS_PATH_BACKEND)
+    my_snapshot_download(
+        repo_id=QUEUE_REPO, revision="main", local_dir=EVAL_REQUESTS_PATH_BACKEND, repo_type="dataset", max_workers=60
+    )
+    my_set_eval_request(
+        api=API,
+        eval_request=eval_request,
+        set_to_status=RUNNING_STATUS,
+        hf_repo=QUEUE_REPO,
+        local_dir=EVAL_REQUESTS_PATH_BACKEND,
+    )
 
     task_lst = TASKS_HARNESS.copy()
     random.shuffle(task_lst)
@@ -258,34 +365,44 @@ def process_pending_requests() -> bool:
     for task in task_lst:
         results = process_evaluation(task, eval_request)
 
-    my_snapshot_download(repo_id=QUEUE_REPO, revision="main", local_dir=EVAL_REQUESTS_PATH_BACKEND, repo_type="dataset", max_workers=60)
-    my_set_eval_request(api=API, eval_request=eval_request, set_to_status=FINISHED_STATUS, hf_repo=QUEUE_REPO, local_dir=EVAL_REQUESTS_PATH_BACKEND)
+    my_snapshot_download(
+        repo_id=QUEUE_REPO, revision="main", local_dir=EVAL_REQUESTS_PATH_BACKEND, repo_type="dataset", max_workers=60
+    )
+    my_set_eval_request(
+        api=API,
+        eval_request=eval_request,
+        set_to_status=FINISHED_STATUS,
+        hf_repo=QUEUE_REPO,
+        local_dir=EVAL_REQUESTS_PATH_BACKEND,
+    )
 
     return True
 
 
 def get_args():
-    parser = argparse.ArgumentParser(description='Run the backend')
-    parser.add_argument('--debug', action='store_true', help='Run in debug mode')
+    parser = argparse.ArgumentParser(description="Run the backend")
+    parser.add_argument("--debug", action="store_true", help="Run in debug mode")
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = get_args()
     local_debug = args.debug
-    #debug specific task by ping
+    # debug specific task by ping
     if local_debug:
-        debug_model_names = ['mistralai/Mixtral-8x7B-Instruct-v0.1']
+        debug_model_names = ["mistralai/Mixtral-8x7B-Instruct-v0.1"]
         # debug_model_names = ["TheBloke/Mixtral-8x7B-v0.1-GPTQ"]
         # debug_task_name = 'ifeval'
-        debug_task_name = 'mmlu'
+        debug_task_name = "mmlu"
         task_lst = TASKS_HARNESS.copy()
         for task in task_lst:
             for debug_model_name in debug_model_names:
                 task_name = task.benchmark
                 if task_name != debug_task_name:
                     continue
-                eval_request = EvalRequest(model=debug_model_name, private=False, status='', json_filepath='', precision='float16')
+                eval_request = EvalRequest(
+                    model=debug_model_name, private=False, status="", json_filepath="", precision="float16"
+                )
                 results = process_evaluation(task, eval_request)
 
     while True:

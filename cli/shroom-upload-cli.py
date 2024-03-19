@@ -4,9 +4,9 @@ import json
 from datasets import Dataset, DatasetDict
 
 file_path = "shroom-data/val.model-agnostic.json"
-ds_path = 'pminervini/shroom'
+ds_path = "pminervini/shroom"
 
-with open(file_path, 'r') as file:
+with open(file_path, "r") as file:
     data = json.load(file)
 
 
@@ -15,7 +15,7 @@ def convert(list_of_dicts):
     for d in list_of_dicts:
         for key, value in d.items():
             dict_of_lists.setdefault(key, []).append(value)
-    return  dict_of_lists
+    return dict_of_lists
 
 
 task_to_data_map = {}

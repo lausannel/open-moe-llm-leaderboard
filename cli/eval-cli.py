@@ -35,12 +35,11 @@ def main():
     status = [PENDING_STATUS, RUNNING_STATUS, FINISHED_STATUS, FAILED_STATUS]
 
     # Get all eval request that are FINISHED, if you want to run other evals, change this parameter
-    eval_requests: list[EvalRequest] = get_eval_requests(job_status=status,
-                                                         hf_repo=QUEUE_REPO,
-                                                         local_dir=EVAL_REQUESTS_PATH_BACKEND,
-                                                         do_download=False)
+    eval_requests: list[EvalRequest] = get_eval_requests(
+        job_status=status, hf_repo=QUEUE_REPO, local_dir=EVAL_REQUESTS_PATH_BACKEND, do_download=False
+    )
     # eval_request = [r for r in eval_requests if 'bloom-560m' in r.model][0]
-    eval_request = [r for r in eval_requests if 'meta-llama/Llama-2-7b-hf' in r.model][0]
+    eval_request = [r for r in eval_requests if "meta-llama/Llama-2-7b-hf" in r.model][0]
 
     # my_task = Task("memo-trap", "acc", "memo-trap", 0)
     # my_task = Task("selfcheckgpt", "avg-selfcheckgpt", "SGPT", 2)
@@ -56,6 +55,7 @@ def main():
 
     eval_logger = utils.eval_logger
     import logging
+
     eval_logger.setLevel(getattr(logging, "DEBUG"))
 
     TASKS_HARNESS = [my_task]
@@ -75,9 +75,19 @@ def main():
         import torch
 
         # breakpoint()
-        results = evaluator.simple_evaluate(model="hf", model_args=eval_request.get_model_args(), tasks=[task.benchmark], num_fewshot=task.num_fewshot,
-                                            batch_size=1, device="mps", use_cache=None, limit=2, write_out=True, task_manager=task_manager)
-        print('AAA', results["results"])
+        results = evaluator.simple_evaluate(
+            model="hf",
+            model_args=eval_request.get_model_args(),
+            tasks=[task.benchmark],
+            num_fewshot=task.num_fewshot,
+            batch_size=1,
+            device="mps",
+            use_cache=None,
+            limit=2,
+            write_out=True,
+            task_manager=task_manager,
+        )
+        print("AAA", results["results"])
 
         breakpoint()
 

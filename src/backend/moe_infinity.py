@@ -8,17 +8,18 @@ from typing import List, Tuple, Optional, Union
 from lm_eval.models.huggingface import HFLM
 from lm_eval.api.registry import register_model
 
-@register_model('moe-infinity')
+
+@register_model("moe-infinity")
 class MoEHFLM(HFLM):
     def __init__(
         self,
         pretrained: str = "mistralai/Mixtral-8x7B-Instruct-v0.1",
         moe_config: dict = None,
-        offload_path = os.path.expanduser('~'),
-        device_memory_ratio = 0.75,
+        offload_path=os.path.expanduser("~"),
+        device_memory_ratio=0.75,
         use_chat_template=True,
         *args,
-        **kwargs
+        **kwargs,
     ):
         # Initialize parent class without calling _create_model in the parent's __init__
         self.checkpoint = pretrained
@@ -28,7 +29,9 @@ class MoEHFLM(HFLM):
         self.use_chat_template = use_chat_template
         if "device" in kwargs:
             kwargs.pop("device")
-        super().__init__(*args, **kwargs, pretrained=pretrained, device_map="cuda:0")  # Assuming HFLM accepts a 'pretrained' arg and handles it
+        super().__init__(
+            *args, **kwargs, pretrained=pretrained, device_map="cuda:0"
+        )  # Assuming HFLM accepts a 'pretrained' arg and handles it
         # self._create_model()
 
     def _create_model(self, *args, **kwargs):
@@ -43,7 +46,9 @@ class MoEHFLM(HFLM):
         # Update default config with any user-provided config
         final_moe_config = {**default_moe_config, **self.moe_config}
         # self._model = MoE(self.checkpoint, final_moe_config)
-        self._model = AutoModelForCausalLM.from_pretrained(self.checkpoint, torch_dtype=torch.float16, device_map="auto")
+        self._model = AutoModelForCausalLM.from_pretrained(
+            self.checkpoint, torch_dtype=torch.float16, device_map="auto"
+        )
 
     @property
     def max_length(self):
@@ -94,9 +99,7 @@ class MoEHFLM(HFLM):
         )
         if left_truncate_len:
             encoding["input_ids"] = encoding["input_ids"][:, -left_truncate_len:]
-            encoding["attention_mask"] = encoding["attention_mask"][
-                :, -left_truncate_len:
-            ]
+            encoding["attention_mask"] = encoding["attention_mask"][:, -left_truncate_len:]
         self.tokenizer.padding_side = old_padding_side
 
         return encoding["input_ids"], encoding["attention_mask"]

@@ -5,6 +5,7 @@ from tqdm import tqdm
 from dataclasses import dataclass
 
 import dateutil
+
 # import numpy as np
 
 from src.display.formatting import make_clickable_model
@@ -32,13 +33,13 @@ class EvalResult:
     revision: str  # commit hash, "" if main
     results: dict
     precision: Precision = Precision.Unknown
-    model_type: ModelType = ModelType.Unknown # Pretrained, fine tuned, ...
-    weight_type: WeightType = WeightType.Original # Original or Adapter
-    architecture: str = "Unknown" # From config file
+    model_type: ModelType = ModelType.Unknown  # Pretrained, fine tuned, ...
+    weight_type: WeightType = WeightType.Original  # Original or Adapter
+    architecture: str = "Unknown"  # From config file
     license: str = "?"
     likes: int = 0
     num_params: int = 0
-    date: str = "" # submission date of request file
+    date: str = ""  # submission date of request file
     still_on_hub: bool = False
 
     @staticmethod
@@ -67,7 +68,9 @@ class EvalResult:
             result_key = f"{org}_{model}_{precision.value.name}"
         full_model = "/".join(org_and_model)
 
-        still_on_hub, error, model_config = is_model_on_hub(full_model, config.get("model_sha", "main"), trust_remote_code=True, test_tokenizer=False)
+        still_on_hub, error, model_config = is_model_on_hub(
+            full_model, config.get("model_sha", "main"), trust_remote_code=True, test_tokenizer=False
+        )
         architecture = "?"
         if model_config is not None:
             architectures = getattr(model_config, "architectures", None)
@@ -79,35 +82,43 @@ class EvalResult:
         # data['results'] is {'nq_open': {'em': 0.24293628808864265, 'em_stderr': 0.007138697341112125}}
 
         results = {}
-        for benchmark, benchmark_results in data['results'].items():
+        for benchmark, benchmark_results in data["results"].items():
             if benchmark not in results:
                 results[benchmark] = {}
 
             for metric, value in benchmark_results.items():
                 to_add = True
-                if '_stderr' in metric:
+                if "_stderr" in metric:
                     to_add = False
-                if 'alias' in metric:
+                if "alias" in metric:
                     to_add = False
 
-                if ',' in metric:
-                    metric = metric.split(',')[0]
+                if "," in metric:
+                    metric = metric.split(",")[0]
                 metric = metric.replace("exact_match", "em")
 
                 if to_add is True:
                     multiplier = 100.0
-                    if 'rouge' in metric and 'truthful' not in benchmark:
+                    if "rouge" in metric and "truthful" not in benchmark:
                         multiplier = 1.0
-                    if 'squad' in benchmark:
+                    if "squad" in benchmark:
                         multiplier = 1.0
 
                     # print('RESULTS', data['results'])
                     # print('XXX', benchmark, metric, value, multiplier)
                     results[benchmark][metric] = value * multiplier
 
-        res = EvalResult(eval_name=result_key, full_model=full_model, org=org, model=model, results=results,
-                         precision=precision, revision=config.get("model_sha", ""), still_on_hub=still_on_hub,
-                         architecture=architecture)
+        res = EvalResult(
+            eval_name=result_key,
+            full_model=full_model,
+            org=org,
+            model=model,
+            results=results,
+            precision=precision,
+            revision=config.get("model_sha", ""),
+            still_on_hub=still_on_hub,
+            architecture=architecture,
+        )
 
         return res
 
@@ -183,6 +194,7 @@ def get_request_file_for_model(requests_path, model_name, precision):
                 request_file = tmp_request_file
     return request_file
 
+
 def get_request_file_for_model_open_llm(requests_path, model_name, precision):
     """Selects the correct request file for a given model. Only keeps runs tagged as FINISHED"""
     request_files = os.path.join(
@@ -197,16 +209,16 @@ def get_request_file_for_model_open_llm(requests_path, model_name, precision):
     for tmp_request_file in request_files:
         with open(tmp_request_file, "r") as f:
             req_content = json.load(f)
-            if (
-                req_content["status"] in ["FINISHED"]
-                and req_content["precision"] == precision.split(".")[-1]
-            ):
+            if req_content["status"] in ["FINISHED"] and req_content["precision"] == precision.split(".")[-1]:
                 request_file = tmp_request_file
     return request_file
 
+
 def update_model_type_with_open_llm_request_file(result, open_llm_requests_path):
     """Finds the relevant request file for the current model and updates info with it"""
-    request_file = get_request_file_for_model_open_llm(open_llm_requests_path, result.full_model, result.precision.value.name)
+    request_file = get_request_file_for_model_open_llm(
+        open_llm_requests_path, result.full_model, result.precision.value.name
+    )
 
     if request_file:
         try:
@@ -219,9 +231,8 @@ def update_model_type_with_open_llm_request_file(result, open_llm_requests_path)
             pass
     return result
 
-def get_raw_eval_results(results_path: str,
-                         requests_path: str,
-                         is_backend: bool = False) -> list[EvalResult]:
+
+def get_raw_eval_results(results_path: str, requests_path: str, is_backend: bool = False) -> list[EvalResult]:
     """From the path of the results folder root, extract all needed info for results"""
     model_result_filepaths = []
 

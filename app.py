@@ -19,7 +19,7 @@ from src.display.about import (
     LLM_BENCHMARKS_TEXT,
     LLM_BENCHMARKS_DETAILS,
     FAQ_TEXT,
-    TITLE
+    TITLE,
 )
 
 from src.display.css_html_js import custom_css
@@ -35,7 +35,7 @@ from src.display.utils import (
     ModelType,
     fields,
     WeightType,
-    Precision
+    Precision,
 )
 
 from src.envs import API, EVAL_REQUESTS_PATH, EVAL_RESULTS_PATH, H4_TOKEN, IS_PUBLIC, QUEUE_REPO, REPO_ID, RESULTS_REPO
@@ -47,7 +47,9 @@ from src.utils import get_dataset_summary_table
 def ui_snapshot_download(repo_id, local_dir, repo_type, tqdm_class, etag_timeout):
     try:
         print(local_dir)
-        snapshot_download(repo_id=repo_id, local_dir=local_dir, repo_type=repo_type, tqdm_class=tqdm_class, etag_timeout=etag_timeout)
+        snapshot_download(
+            repo_id=repo_id, local_dir=local_dir, repo_type=repo_type, tqdm_class=tqdm_class, etag_timeout=etag_timeout
+        )
     except Exception as e:
         restart_space()
 
@@ -57,15 +59,21 @@ def restart_space():
 
 
 def init_space():
-    dataset_df = get_dataset_summary_table(file_path='blog/Hallucination-Leaderboard-Summary.csv')
+    dataset_df = get_dataset_summary_table(file_path="blog/Hallucination-Leaderboard-Summary.csv")
 
-    if socket.gethostname() not in {'neuromancer'}:
+    if socket.gethostname() not in {"neuromancer"}:
         # sync model_type with open-llm-leaderboard
-        ui_snapshot_download(repo_id=QUEUE_REPO, local_dir=EVAL_REQUESTS_PATH, repo_type="dataset", tqdm_class=None, etag_timeout=30)
-        ui_snapshot_download(repo_id=RESULTS_REPO, local_dir=EVAL_RESULTS_PATH, repo_type="dataset", tqdm_class=None, etag_timeout=30)
+        ui_snapshot_download(
+            repo_id=QUEUE_REPO, local_dir=EVAL_REQUESTS_PATH, repo_type="dataset", tqdm_class=None, etag_timeout=30
+        )
+        ui_snapshot_download(
+            repo_id=RESULTS_REPO, local_dir=EVAL_RESULTS_PATH, repo_type="dataset", tqdm_class=None, etag_timeout=30
+        )
     raw_data, original_df = get_leaderboard_df(EVAL_RESULTS_PATH, EVAL_REQUESTS_PATH, "", COLS, BENCHMARK_COLS)
 
-    finished_eval_queue_df, running_eval_queue_df, pending_eval_queue_df = get_evaluation_queue_df(EVAL_REQUESTS_PATH, EVAL_COLS)
+    finished_eval_queue_df, running_eval_queue_df, pending_eval_queue_df = get_evaluation_queue_df(
+        EVAL_REQUESTS_PATH, EVAL_COLS
+    )
     return dataset_df, original_df, finished_eval_queue_df, running_eval_queue_df, pending_eval_queue_df
 
 
@@ -74,12 +82,9 @@ leaderboard_df = original_df.copy()
 
 
 # Searching and filtering
-def update_table(hidden_df: pd.DataFrame,
-                 columns: list,
-                 type_query: list,
-                 precision_query: list,
-                 size_query: list,
-                 query: str):
+def update_table(
+    hidden_df: pd.DataFrame, columns: list, type_query: list, precision_query: list, size_query: list, query: str
+):
     filtered_df = filter_models(hidden_df, type_query, size_query, precision_query)
     filtered_df = filter_queries(query, filtered_df)
     df = select_columns(filtered_df, columns)
@@ -99,7 +104,9 @@ def select_columns(df: pd.DataFrame, columns: list) -> pd.DataFrame:
     # We use COLS to maintain sorting
     filtered_df = df[
         # always_here_cols + [c for c in COLS if c in df.columns and c in columns] + [AutoEvalColumn.dummy.name]
-        always_here_cols + [c for c in COLS if c in df.columns and c in columns] + dummy_col
+        always_here_cols
+        + [c for c in COLS if c in df.columns and c in columns]
+        + dummy_col
     ]
     return filtered_df
 
@@ -121,10 +128,7 @@ def filter_queries(query: str, filtered_df: pd.DataFrame):
     return filtered_df
 
 
-def filter_models(df: pd.DataFrame,
-                  type_query: list,
-                  size_query: list,
-                  precision_query: list) -> pd.DataFrame:
+def filter_models(df: pd.DataFrame, type_query: list, size_query: list, precision_query: list) -> pd.DataFrame:
     # Show all models
     filtered_df = df
 
@@ -152,15 +156,15 @@ with demo:
     gr.Markdown(INTRODUCTION_TEXT, elem_classes="markdown-text")
 
     with gr.Tabs(elem_classes="tab-buttons") as tabs:
-        with gr.TabItem("MOE-LLM-GPU-Poor-Leaderboard Benchmark",
-                        elem_id="llm-benchmark-tab-table",
-                        id=0):
+        with gr.TabItem("MOE-LLM-GPU-Poor-Leaderboard Benchmark", elem_id="llm-benchmark-tab-table", id=0):
             with gr.Row():
                 with gr.Column():
                     with gr.Row():
-                        search_bar = gr.Textbox(placeholder=" 🔍 Model search (separate multiple queries with `;`)",
-                                                show_label=False,
-                                                elem_id="search-bar")
+                        search_bar = gr.Textbox(
+                            placeholder=" 🔍 Model search (separate multiple queries with `;`)",
+                            show_label=False,
+                            elem_id="search-bar",
+                        )
                     with gr.Row():
                         shown_columns = gr.CheckboxGroup(
                             choices=[
@@ -175,7 +179,8 @@ with demo:
                             ],
                             label="Select columns to show",
                             elem_id="column-select",
-                            interactive=True)
+                            interactive=True,
+                        )
 
                 with gr.Column(min_width=320):
                     filter_columns_type = gr.CheckboxGroup(
@@ -183,40 +188,51 @@ with demo:
                         choices=[t.to_str() for t in ModelType],
                         value=[t.to_str() for t in ModelType],
                         interactive=True,
-                        elem_id="filter-columns-type")
+                        elem_id="filter-columns-type",
+                    )
 
                     filter_columns_precision = gr.CheckboxGroup(
                         label="Precision",
                         choices=[i.value.name for i in Precision],
                         value=[i.value.name for i in Precision],
                         interactive=True,
-                        elem_id="filter-columns-precision")
+                        elem_id="filter-columns-precision",
+                    )
 
                     filter_columns_size = gr.CheckboxGroup(
                         label="Model sizes (in billions of parameters)",
                         choices=list(NUMERIC_INTERVALS.keys()),
                         value=list(NUMERIC_INTERVALS.keys()),
                         interactive=True,
-                        elem_id="filter-columns-size")
+                        elem_id="filter-columns-size",
+                    )
 
             # breakpoint()
 
             leaderboard_table = gr.components.Dataframe(
-                value=leaderboard_df[
-                    [c.name for c in fields(AutoEvalColumn) if c.never_hidden] + shown_columns.value + [AutoEvalColumn.dummy.name]
-                ] if leaderboard_df.empty is False else leaderboard_df,
+                value=(
+                    leaderboard_df[
+                        [c.name for c in fields(AutoEvalColumn) if c.never_hidden]
+                        + shown_columns.value
+                        + [AutoEvalColumn.dummy.name]
+                    ]
+                    if leaderboard_df.empty is False
+                    else leaderboard_df
+                ),
                 headers=[c.name for c in fields(AutoEvalColumn) if c.never_hidden] + shown_columns.value,
                 datatype=TYPES,
                 elem_id="leaderboard-table",
                 interactive=False,
-                visible=True)  # column_widths=["2%", "20%"]
+                visible=True,
+            )  # column_widths=["2%", "20%"]
 
             # Dummy leaderboard for handling the case when the user uses backspace key
             hidden_leaderboard_table_for_search = gr.components.Dataframe(
                 value=original_df[COLS] if original_df.empty is False else original_df,
                 headers=COLS,
                 datatype=TYPES,
-                visible=False)
+                visible=False,
+            )
 
             search_bar.submit(
                 update_table,
@@ -228,7 +244,8 @@ with demo:
                     filter_columns_size,
                     search_bar,
                 ],
-                leaderboard_table)
+                leaderboard_table,
+            )
 
             # Check query parameter once at startup and update search bar
             demo.load(load_query, inputs=[], outputs=[search_bar])
@@ -245,7 +262,8 @@ with demo:
                         search_bar,
                     ],
                     leaderboard_table,
-                    queue=True)
+                    queue=True,
+                )
 
         with gr.TabItem("About", elem_id="llm-benchmark-tab-table", id=2):
             gr.Markdown(LLM_BENCHMARKS_TEXT, elem_classes="markdown-text")
@@ -253,11 +271,12 @@ with demo:
             dataset_table = gr.components.Dataframe(
                 value=dataset_df,
                 headers=list(dataset_df.columns),
-                datatype=['str', 'markdown', 'str', 'str', 'str'],
+                datatype=["str", "markdown", "str", "str", "str"],
                 elem_id="dataset-table",
                 interactive=False,
                 visible=True,
-                column_widths=["15%", "20%"])
+                column_widths=["15%", "20%"],
+            )
 
             gr.Markdown(LLM_BENCHMARKS_DETAILS, elem_classes="markdown-text")
             gr.Markdown(FAQ_TEXT, elem_classes="markdown-text")
@@ -271,26 +290,20 @@ with demo:
                     with gr.Accordion(f"✅ Finished Evaluations ({len(finished_eval_queue_df)})", open=False):
                         with gr.Row():
                             finished_eval_table = gr.components.Dataframe(
-                                value=finished_eval_queue_df,
-                                headers=EVAL_COLS,
-                                datatype=EVAL_TYPES,
-                                row_count=5)
+                                value=finished_eval_queue_df, headers=EVAL_COLS, datatype=EVAL_TYPES, row_count=5
+                            )
 
                     with gr.Accordion(f"🔄 Running Evaluation Queue ({len(running_eval_queue_df)})", open=False):
                         with gr.Row():
                             running_eval_table = gr.components.Dataframe(
-                                value=running_eval_queue_df,
-                                headers=EVAL_COLS,
-                                datatype=EVAL_TYPES,
-                                row_count=5)
+                                value=running_eval_queue_df, headers=EVAL_COLS, datatype=EVAL_TYPES, row_count=5
+                            )
 
                     with gr.Accordion(f"⏳ Scheduled Evaluation Queue ({len(pending_eval_queue_df)})", open=False):
                         with gr.Row():
                             pending_eval_table = gr.components.Dataframe(
-                                value=pending_eval_queue_df,
-                                headers=EVAL_COLS,
-                                datatype=EVAL_TYPES,
-                                row_count=5)
+                                value=pending_eval_queue_df, headers=EVAL_COLS, datatype=EVAL_TYPES, row_count=5
+                            )
 
             with gr.Row():
                 gr.Markdown("# Submit your model here", elem_classes="markdown-text")
@@ -305,7 +318,8 @@ with demo:
                         label="Model type",
                         multiselect=False,
                         value=None,
-                        interactive=True)
+                        interactive=True,
+                    )
 
                 with gr.Column():
                     precision = gr.Dropdown(
@@ -313,14 +327,16 @@ with demo:
                         label="Precision",
                         multiselect=False,
                         value="float32",
-                        interactive=True)
+                        interactive=True,
+                    )
 
                     weight_type = gr.Dropdown(
                         choices=[i.value.name for i in WeightType],
                         label="Weights type",
                         multiselect=False,
                         value="Original",
-                        interactive=True)
+                        interactive=True,
+                    )
 
                     base_model_name_textbox = gr.Textbox(label="Base model (for delta or adapter weights)")
 
@@ -337,7 +353,8 @@ with demo:
                     weight_type,
                     model_type,
                 ],
-                submission_result)
+                submission_result,
+            )
 
     with gr.Row():
         with gr.Accordion("Citing this leaderboard", open=False):
@@ -346,7 +363,8 @@ with demo:
                 label=CITATION_BUTTON_LABEL,
                 lines=20,
                 elem_id="citation-button",
-                show_copy_button=True)
+                show_copy_button=True,
+            )
 
 scheduler = BackgroundScheduler()
 
@@ -356,7 +374,8 @@ scheduler.add_job(restart_space, "interval", seconds=6 * 60 * 60)
 def launch_backend():
     import subprocess
     from src.backend.envs import DEVICE
-    if DEVICE not in {'cpu'}:
+
+    if DEVICE not in {"cpu"}:
         _ = subprocess.run(["python", "backend-cli.py"])
 
 

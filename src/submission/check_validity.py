@@ -40,20 +40,34 @@ def check_model_card(repo_id: str) -> tuple[bool, str]:
     return True, ""
 
 
-def is_model_on_hub(model_name: str, revision: str, token: str = None, trust_remote_code=False, test_tokenizer=False) -> tuple[bool, Optional[str], Optional[AutoConfig]]:
+def is_model_on_hub(
+    model_name: str, revision: str, token: str = None, trust_remote_code=False, test_tokenizer=False
+) -> tuple[bool, Optional[str], Optional[AutoConfig]]:
     try:
-        config = AutoConfig.from_pretrained(model_name, revision=revision, trust_remote_code=trust_remote_code, token=token)
+        config = AutoConfig.from_pretrained(
+            model_name, revision=revision, trust_remote_code=trust_remote_code, token=token
+        )
         if test_tokenizer:
             try:
-                AutoTokenizer.from_pretrained(model_name, revision=revision, trust_remote_code=trust_remote_code, token=token)
+                AutoTokenizer.from_pretrained(
+                    model_name, revision=revision, trust_remote_code=trust_remote_code, token=token
+                )
             except ValueError as e:
                 return False, f"uses a tokenizer which is not in a transformers release: {e}", None
             except Exception as e:
-                return False, "'s tokenizer cannot be loaded. Is your tokenizer class in a stable transformers release, and correctly configured?", None
+                return (
+                    False,
+                    "'s tokenizer cannot be loaded. Is your tokenizer class in a stable transformers release, and correctly configured?",
+                    None,
+                )
         return True, None, config
 
     except ValueError as e:
-        return False, "needs to be launched with `trust_remote_code=True`. For safety reason, we do not allow these models to be automatically submitted to the leaderboard.", None
+        return (
+            False,
+            "needs to be launched with `trust_remote_code=True`. For safety reason, we do not allow these models to be automatically submitted to the leaderboard.",
+            None,
+        )
 
     except Exception as e:
         return False, f"was not found on hub -- {str(e)}", None
@@ -63,7 +77,7 @@ def get_model_size(model_info: ModelInfo, precision: str):
     size_pattern = size_pattern = re.compile(r"(\d\.)?\d+(b|m)")
     try:
         model_size = round(model_info.safetensors["total"] / 1e9, 3)
-    except (AttributeError, TypeError ):
+    except (AttributeError, TypeError):
         try:
             size_match = re.search(size_pattern, model_info.modelId.lower())
             model_size = size_match.group(0)
@@ -75,8 +89,10 @@ def get_model_size(model_info: ModelInfo, precision: str):
     model_size = size_factor * model_size
     return model_size
 
+
 def get_model_arch(model_info: ModelInfo):
     return model_info.config.get("architectures", "Unknown")
+
 
 def user_submission_permission(org_or_user, users_to_submission_dates, rate_limit_period, rate_limit_quota):
     if org_or_user not in users_to_submission_dates:

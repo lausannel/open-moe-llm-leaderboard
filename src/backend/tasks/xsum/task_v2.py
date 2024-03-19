@@ -1,5 +1,6 @@
 from lm_eval.api.task import ConfigurableTask
 from lm_eval.api.instance import Instance
+
 # from lm_eval.api.registry import register_task
 from lm_eval.api.metrics import mean
 
@@ -18,8 +19,16 @@ def bleu(refs, preds):
     :param preds:
         A `list` of predicted `str`s.
     """
-    score = sacrebleu.corpus_bleu(preds, refs, smooth_method="exp", smooth_value=0.0, force=False,
-                                  lowercase=False, tokenize="intl", use_effective_order=False).score
+    score = sacrebleu.corpus_bleu(
+        preds,
+        refs,
+        smooth_method="exp",
+        smooth_value=0.0,
+        force=False,
+        lowercase=False,
+        tokenize="intl",
+        use_effective_order=False,
+    ).score
     return score
 
 
@@ -59,8 +68,12 @@ class XSumv2(ConfigurableTask):
 
     def __init__(self):
         # breakpoint()
-        super().__init__(config={'metadata': {'version': self.VERSION},
-                                 'generation_kwargs': {'do_sample': False, 'temperature': 0.0, 'until': ['\n', '\n\n']}})
+        super().__init__(
+            config={
+                "metadata": {"version": self.VERSION},
+                "generation_kwargs": {"do_sample": False, "temperature": 0.0, "until": ["\n", "\n\n"]},
+            }
+        )
         self.factkb_tokenizer = None
         self.factkb_model = None
         self.bert_score = None
@@ -68,12 +81,18 @@ class XSumv2(ConfigurableTask):
     def maybe_init_factkb(self):
         if self.factkb_tokenizer is None or self.factkb_model is None:
             from transformers import AutoTokenizer, AutoModelForSequenceClassification
-            self.factkb_tokenizer = AutoTokenizer.from_pretrained("roberta-base", padding="max_length", truncation=True)
-            self.factkb_model = AutoModelForSequenceClassification.from_pretrained("bunsenfeng/FactKB", num_labels=2, device_map="auto")
+
+            self.factkb_tokenizer = AutoTokenizer.from_pretrained(
+                "roberta-base", padding="max_length", truncation=True
+            )
+            self.factkb_model = AutoModelForSequenceClassification.from_pretrained(
+                "bunsenfeng/FactKB", num_labels=2, device_map="auto"
+            )
 
     def maybe_init_bertscore(self):
         if self.bert_score is None:
             from evaluate import load
+
             self.bert_score = load("bertscore")
 
     def has_training_docs(self):
@@ -129,7 +148,7 @@ class XSumv2(ConfigurableTask):
                 # arguments=(ctx, {"until": ["\n", "."]}),
                 arguments=(ctx, {"until": ["\n"]}),
                 idx=0,
-                **kwargs
+                **kwargs,
             )
         ]
 
@@ -155,12 +174,16 @@ class XSumv2(ConfigurableTask):
 
         self.maybe_init_factkb()
         input_factkb = [[completion, document]]
-        factkb_tokens = self.factkb_tokenizer(input_factkb, return_tensors="pt", padding="max_length", truncation=True).to(self.factkb_model.device)
+        factkb_tokens = self.factkb_tokenizer(
+            input_factkb, return_tensors="pt", padding="max_length", truncation=True
+        ).to(self.factkb_model.device)
         factkb_logits = self.factkb_model(**factkb_tokens).logits
         factkb_res = torch.softmax(factkb_logits, dim=1)
 
         self.maybe_init_bertscore()
-        bert_score_res = self.bert_score.compute(predictions=[completion], references=[gold_summary], model_type="microsoft/deberta-xlarge-mnli", lang="en")
+        bert_score_res = self.bert_score.compute(
+            predictions=[completion], references=[gold_summary], model_type="microsoft/deberta-xlarge-mnli", lang="en"
+        )
 
         res = {
             "rouge1": rouge1_scores[0],
@@ -182,7 +205,18 @@ class XSumv2(ConfigurableTask):
             A dictionary where keys are the names of submetrics and values are
             functions that aggregate a list of metrics
         """
-        return {k: mean for k in ["rouge1", "rouge2", "rougeL", "factKB", "bertscore_precision", "bertscore_recall", "bertscore_f1"]}
+        return {
+            k: mean
+            for k in [
+                "rouge1",
+                "rouge2",
+                "rougeL",
+                "factKB",
+                "bertscore_precision",
+                "bertscore_recall",
+                "bertscore_f1",
+            ]
+        }
 
     def higher_is_better(self):
         """
@@ -190,4 +224,15 @@ class XSumv2(ConfigurableTask):
             A dictionary where keys are the names of submetrics and values are
             whether a higher value of the submetric is better
         """
-        return {k: True for k in ["rouge1", "rouge2", "rougeL", "factKB", "bertscore_precision", "bertscore_recall", "bertscore_f1"]}
+        return {
+            k: True
+            for k in [
+                "rouge1",
+                "rouge2",
+                "rougeL",
+                "factKB",
+                "bertscore_precision",
+                "bertscore_recall",
+                "bertscore_f1",
+            ]
+        }

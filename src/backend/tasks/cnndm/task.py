@@ -1,5 +1,6 @@
 from lm_eval.api.task import ConfigurableTask
 from lm_eval.api.instance import Instance
+
 # from lm_eval.api.registry import register_task
 from lm_eval.api.metrics import mean
 
@@ -66,7 +67,7 @@ class CNNDM(ConfigurableTask):
     DATASET_NAME = "3.0.0"
 
     def __init__(self):
-        super().__init__(config={'metadata': {'version': self.VERSION}})
+        super().__init__(config={"metadata": {"version": self.VERSION}})
         self.factkb_tokenizer = None
         self.factkb_model = None
         self.bert_score = None
@@ -74,12 +75,18 @@ class CNNDM(ConfigurableTask):
     def maybe_init_factkb(self):
         if self.factkb_tokenizer is None or self.factkb_model is None:
             from transformers import AutoTokenizer, AutoModelForSequenceClassification
-            self.factkb_tokenizer = AutoTokenizer.from_pretrained("roberta-base", padding="max_length", truncation=True)
-            self.factkb_model = AutoModelForSequenceClassification.from_pretrained("bunsenfeng/FactKB", num_labels=2, device_map="auto")
+
+            self.factkb_tokenizer = AutoTokenizer.from_pretrained(
+                "roberta-base", padding="max_length", truncation=True
+            )
+            self.factkb_model = AutoModelForSequenceClassification.from_pretrained(
+                "bunsenfeng/FactKB", num_labels=2, device_map="auto"
+            )
 
     def maybe_init_bertscore(self):
         if self.bert_score is None:
             from evaluate import load
+
             self.bert_score = load("bertscore")
 
     def has_training_docs(self):
@@ -125,15 +132,7 @@ class CNNDM(ConfigurableTask):
             part of the document for `doc`.
         """
 
-        return [
-            Instance(
-                request_type="generate_until",
-                doc=doc,
-                arguments=(ctx, {"until": ["\n"]}),
-                idx=0,
-                **kwargs
-            )
-        ]
+        return [Instance(request_type="generate_until", doc=doc, arguments=(ctx, {"until": ["\n"]}), idx=0, **kwargs)]
 
     def process_results(self, doc, results):
         completion = results[0]
@@ -157,12 +156,16 @@ class CNNDM(ConfigurableTask):
 
         self.maybe_init_factkb()
         input_factkb = [[completion, document]]
-        factkb_tokens = self.factkb_tokenizer(input_factkb, return_tensors="pt", padding="max_length", truncation=True).to(self.factkb_model.device)
+        factkb_tokens = self.factkb_tokenizer(
+            input_factkb, return_tensors="pt", padding="max_length", truncation=True
+        ).to(self.factkb_model.device)
         factkb_logits = self.factkb_model(**factkb_tokens).logits
         factkb_res = torch.softmax(factkb_logits, dim=1)
 
         self.maybe_init_bertscore()
-        bert_score_res = self.bert_score.compute(predictions=[completion], references=[gold_summary], model_type="microsoft/deberta-xlarge-mnli", lang="en")
+        bert_score_res = self.bert_score.compute(
+            predictions=[completion], references=[gold_summary], model_type="microsoft/deberta-xlarge-mnli", lang="en"
+        )
 
         res = {
             "rouge1": rouge1_scores[0],
@@ -171,7 +174,7 @@ class CNNDM(ConfigurableTask):
             "factKB": float(factkb_res[0][1]),
             "bertscore_precision": float(bert_score_res["precision"][0]),
             "bertscore_recall": float(bert_score_res["recall"][0]),
-            "bertscore_f1": float(bert_score_res["f1"][0])
+            "bertscore_f1": float(bert_score_res["f1"][0]),
         }
 
         return res
@@ -182,7 +185,18 @@ class CNNDM(ConfigurableTask):
             A dictionary where keys are the names of submetrics and values are
             functions that aggregate a list of metrics
         """
-        return {k: mean for k in ["rouge1", "rouge2", "rougeL", "factKB", "bertscore_precision", "bertscore_recall", "bertscore_f1"]}
+        return {
+            k: mean
+            for k in [
+                "rouge1",
+                "rouge2",
+                "rougeL",
+                "factKB",
+                "bertscore_precision",
+                "bertscore_recall",
+                "bertscore_f1",
+            ]
+        }
 
     def higher_is_better(self):
         """
@@ -190,5 +204,15 @@ class CNNDM(ConfigurableTask):
             A dictionary where keys are the names of submetrics and values are
             whether a higher value of the submetric is better
         """
-        return {k: True for k in ["rouge1", "rouge2", "rougeL", "factKB", "bertscore_precision", "bertscore_recall", "bertscore_f1"]}
-
+        return {
+            k: True
+            for k in [
+                "rouge1",
+                "rouge2",
+                "rougeL",
+                "factKB",
+                "bertscore_precision",
+                "bertscore_recall",
+                "bertscore_f1",
+            ]
+        }

@@ -61,6 +61,7 @@ class ColumnContent:
     never_hidden: bool = False
     dummy: bool = False
 
+
 auto_eval_column_dict = []
 auto_eval_column_dict.append(["model", ColumnContent, ColumnContent("Model", "str", True, never_hidden=True)])
 auto_eval_column_dict.append(["hardware", ColumnContent, ColumnContent("Hardware", "str", True, never_hidden=True)])

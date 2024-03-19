@@ -5,7 +5,8 @@ import transformers
 from lm_eval.models.huggingface import HFLM
 from lm_eval.api.registry import register_model
 
-@register_model('hf-chat')
+
+@register_model("hf-chat")
 class HFLMwithChatTemplate(HFLM):
     def __init__(self, use_chat_template=True, **kwargs):
         super().__init__(**kwargs)
@@ -49,9 +50,7 @@ class HFLMwithChatTemplate(HFLM):
         )
         if left_truncate_len:
             encoding["input_ids"] = encoding["input_ids"][:, -left_truncate_len:]
-            encoding["attention_mask"] = encoding["attention_mask"][
-                :, -left_truncate_len:
-            ]
+            encoding["attention_mask"] = encoding["attention_mask"][:, -left_truncate_len:]
         self.tokenizer.padding_side = old_padding_side
 
         return encoding["input_ids"], encoding["attention_mask"]
