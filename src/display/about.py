@@ -3,7 +3,7 @@ from src.display.utils import ModelType
 TITLE = """<h1 align="center" id="space-title">MOE LLM GPU-Poor Leaderboard</h1>"""
 
 INTRODUCTION_TEXT = """
-📐 The MOE LLM GPU-Poor Leaderboard aims to track, rank and evaluate hallucinations in LLMs.
+📐 The MOE LLM GPU-Poor Leaderboard aims to evaluate LLMs.
 
 
 """
