@@ -59,6 +59,7 @@ def run_evaluation(
         limit=limit,
         write_out=True,
         task_manager=task_manager,
+        verbosity="WARNING",
     )
 
     results["config"]["model_dtype"] = eval_request.precision

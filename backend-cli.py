@@ -25,10 +25,21 @@ from typing import Optional
 
 import time
 
-import logging
 import pprint
-from lm_eval.utils import eval_logger
+import logging
 
+
+# Configure the root logger
+logging.basicConfig(
+    format="%(asctime)s,%(msecs)03d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s",
+    datefmt="%Y-%m-%d:%H:%M:%S",
+    level=logging.WARNING,
+)
+
+# Get the 'lm-eval' logger from the third-party library
+eval_logger = logging.getLogger("lm-eval")
+
+# Explicitly set the level for 'lm-eval' logger to WARNING
 eval_logger.setLevel(logging.WARNING)
 
 
