@@ -43,7 +43,7 @@ class Tasks(Enum):
 
     # task13 = Task("ifeval", "prompt_level_strict_acc", "IFEval", 0)
 
-    # task14 = Task("selfcheckgpt", "max-selfcheckgpt", "SelfCheckGPT", 0)
+    task14 = Task("selfcheckgpt", "max-selfcheckgpt", "SelfCheckGPT", 0)
 
     # task15 = Task("fever10", "acc", "FEVER", 16)
     # task15_1 = Task("fever11", "acc", "FEVER", 8)

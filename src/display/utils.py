@@ -45,7 +45,7 @@ class Tasks(Enum):
     # halueval_dial = Task("halueval_dialogue", "acc", "HaluDial/Acc")
 
     # # XXX include me back at some point
-    # selfcheck = Task("selfcheckgpt", "max-selfcheckgpt", "SelfCheckGPT")
+    selfcheck = Task("selfcheckgpt", "max-selfcheckgpt", "SelfCheckGPT")
     mmlu = Task("mmlu", "acc", "MMLU/Acc")
 
 
