@@ -42,13 +42,13 @@ def run_evaluation(
     # task_names = utils.pattern_match(task_names, tasks.ALL_TASKS)
 
     print(f"Selected Tasks: {task_names}")
-    print(f"Eval Request: {eval_request.get_model_args()}")
+    print(f"Eval Request: {eval_request}")
     print(
         f"Num Fewshot: {num_fewshot}, Batch Size: {batch_size}, Device: {device}, Use Cache: {use_cache}, Limit: {limit}"
     )
     # hf-chat is implemented to use apply_chat_template
     results = evaluator.simple_evaluate(
-        model="moe-infinity",  # "hf-causal-experimental",  # "hf-causal", hf-chat
+        model=eval_request.inference_framework,  # "hf-causal-experimental",  # "hf-causal", hf-chat
         model_args=eval_request.get_model_args(),
         tasks=task_names,
         num_fewshot=num_fewshot,
@@ -65,6 +65,7 @@ def run_evaluation(
     results["config"]["model_dtype"] = eval_request.precision
     results["config"]["model_name"] = eval_request.model
     results["config"]["model_sha"] = eval_request.revision
+    results["config"]["inference_framework"] = eval_request.inference_framework
 
     if max_nb_samples is not None:
         if "samples" in results:

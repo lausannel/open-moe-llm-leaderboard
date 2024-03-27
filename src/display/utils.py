@@ -70,6 +70,9 @@ auto_eval_column_dict.append(["model", ColumnContent, ColumnContent("Model", "ma
 # #Scores
 # # auto_eval_column_dict.append(["average", ColumnContent, ColumnContent("Avg", "number", True)])
 
+# Inference framework
+auto_eval_column_dict.append(["inference_framework", ColumnContent, ColumnContent("Inference framework", "str", True)])
+
 for task in Tasks:
     auto_eval_column_dict.append([task.name, ColumnContent, ColumnContent(task.value.col_name, "number", True)])
 
@@ -128,6 +131,24 @@ class ModelType(Enum):
             return ModelType.merges
         return ModelType.Unknown
 
+
+class InferenceFramework(Enum):
+    # "moe-infinity", hf-chat
+    MoE_Infinity = ModelDetails("MoE-Infinity")
+    HF_Chat = ModelDetails("HF-Chat")
+    Unknown = ModelDetails("?")
+
+    def to_str(self):
+        return self.value.name
+    
+    @staticmethod
+    def from_str(inference_framework: str):
+        if inference_framework in ["moe-infinity"]:
+            return InferenceFramework.MoE_Infinity
+        if inference_framework in ["hf-chat"]:
+            return InferenceFramework.HF_Chat
+        return InferenceFramework.Unknown
+    
 
 class WeightType(Enum):
     Adapter = ModelDetails("Adapter")

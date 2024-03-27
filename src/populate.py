@@ -3,6 +3,7 @@ import os
 from tqdm import tqdm
 import copy
 import pandas as pd
+import numpy as np
 
 from src.display.formatting import has_no_nan_values, make_clickable_model
 from src.display.utils import AutoEvalColumn, EvalQueueColumn
@@ -63,6 +64,9 @@ def get_leaderboard_df(
 
     # if AutoEvalColumn.average.name in df:
     #     df = df.sort_values(by=[AutoEvalColumn.average.name], ascending=False)
+    for col in cols:
+        if col not in df.columns:
+            df[col] = np.nan
 
     if not df.empty:
         df = df[cols].round(decimals=2)

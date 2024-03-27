@@ -41,12 +41,15 @@ class EvalResult:
     num_params: int = 0
     date: str = ""  # submission date of request file
     still_on_hub: bool = False
+    inference_framework: str = "Unknown"
 
     @staticmethod
     def init_from_json_file(json_filepath, is_backend: bool = False):
         """Inits the result from the specific model result file"""
         with open(json_filepath) as fp:
             data = json.load(fp)
+
+        inference_framework = data.get("inference_framework", "Unknown")
 
         # We manage the legacy config format
         config = data.get("config", data.get("config_general", None))
@@ -118,6 +121,7 @@ class EvalResult:
             revision=config.get("model_sha", ""),
             still_on_hub=still_on_hub,
             architecture=architecture,
+            inference_framework=inference_framework,
         )
 
         return res
@@ -136,6 +140,7 @@ class EvalResult:
             self.likes = request.get("likes", 0)
             self.num_params = request.get("params", 0)
             self.date = request.get("submitted_time", "")
+            self.inference_framework = request.get("inference_framework", "Unknown")
         except Exception as e:
             print(f"Could not find request file for {self.org}/{self.model} -- path: {requests_path} -- {e}")
 
@@ -166,6 +171,7 @@ class EvalResult:
             AutoEvalColumn.likes.name: self.likes,
             AutoEvalColumn.params.name: self.num_params,
             AutoEvalColumn.still_on_hub.name: self.still_on_hub,
+            AutoEvalColumn.inference_framework.name: self.inference_framework,
         }
 
         for task in Tasks:

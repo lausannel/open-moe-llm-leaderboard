@@ -33,6 +33,7 @@ from src.display.utils import (
     TYPES,
     AutoEvalColumn,
     ModelType,
+    InferenceFramework,
     fields,
     WeightType,
     Precision,
@@ -183,6 +184,14 @@ with demo:
                         )
 
                 with gr.Column(min_width=320):
+                    filter_columns_size = gr.CheckboxGroup(
+                        label="Inference frameworks",
+                        choices=[t.to_str() for t in InferenceFramework],
+                        value=[t.to_str() for t in InferenceFramework],
+                        interactive=True,
+                        elem_id="filter-columns-size",
+                    )
+
                     filter_columns_type = gr.CheckboxGroup(
                         label="Model types",
                         choices=[t.to_str() for t in ModelType],
@@ -199,13 +208,13 @@ with demo:
                         elem_id="filter-columns-precision",
                     )
 
-                    filter_columns_size = gr.CheckboxGroup(
-                        label="Model sizes (in billions of parameters)",
-                        choices=list(NUMERIC_INTERVALS.keys()),
-                        value=list(NUMERIC_INTERVALS.keys()),
-                        interactive=True,
-                        elem_id="filter-columns-size",
-                    )
+                    # filter_columns_size = gr.CheckboxGroup(
+                    #     label="Model sizes (in billions of parameters)",
+                    #     choices=list(NUMERIC_INTERVALS.keys()),
+                    #     value=list(NUMERIC_INTERVALS.keys()),
+                    #     interactive=True,
+                    #     elem_id="filter-columns-size",
+                    # )
 
             # breakpoint()
 
@@ -308,6 +317,15 @@ with demo:
             with gr.Row():
                 gr.Markdown("# Submit your model here", elem_classes="markdown-text")
 
+            with gr.Row():
+                inference_framework = gr.Dropdown(
+                    choices=[t.to_str() for t in InferenceFramework],
+                    label="Inference framework",
+                    multiselect=False,
+                    value=None,
+                    interactive=True,
+                )
+                
             with gr.Row():
                 with gr.Column():
                     model_name_textbox = gr.Textbox(label="Model name")
