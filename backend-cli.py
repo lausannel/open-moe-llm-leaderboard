@@ -406,7 +406,7 @@ if __name__ == "__main__":
     if local_debug:
         debug_model_names = ["mistralai/Mixtral-8x7B-Instruct-v0.1"]
         # debug_model_names = ["TheBloke/Mixtral-8x7B-v0.1-GPTQ"]
-        # debug_task_name = 'ifeval'
+        # debug_task_name = 'selfcheck'
         debug_task_name = "mmlu"
         task_lst = TASKS_HARNESS.copy()
         for task in task_lst:
@@ -418,25 +418,25 @@ if __name__ == "__main__":
                     model=debug_model_name, private=False, status="", json_filepath="", precision="float16"
                 )
                 results = process_evaluation(task, eval_request)
+    else:
+        while True:
+            res = False
 
-    while True:
-        res = False
+            # if random.randint(0, 10) == 0:
+            res = process_pending_requests()
+            print(f"waiting for 60 seconds")
+            time.sleep(60)
 
-        # if random.randint(0, 10) == 0:
-        res = process_pending_requests()
-        print(f"waiting for 60 seconds")
-        time.sleep(60)
+            # if res is False:
+            #     if random.randint(0, 5) == 0:
+            #         res = maybe_refresh_results(100)
+            #     else:
+            #         res = process_finished_requests(100)
 
-        # if res is False:
-        #     if random.randint(0, 5) == 0:
-        #         res = maybe_refresh_results(100)
-        #     else:
-        #         res = process_finished_requests(100)
+            # time.sleep(60)
 
-        # time.sleep(60)
-
-        # if res is False:
-        #     if random.randint(0, 5) == 0:
-        #         res = maybe_refresh_results(0)
-        #     else:
-        #         res = process_finished_requests(0)
+            # if res is False:
+            #     if random.randint(0, 5) == 0:
+            #         res = maybe_refresh_results(0)
+            #     else:
+            #         res = process_finished_requests(0)
