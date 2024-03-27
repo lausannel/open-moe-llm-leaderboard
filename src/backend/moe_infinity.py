@@ -2,7 +2,7 @@ import torch
 import os
 from transformers import AutoTokenizer
 from transformers import AutoModelForCausalLM
-from moe_infinity import MoE
+# from moe_infinity import MoE
 from typing import List, Tuple, Optional, Union
 
 from lm_eval.models.huggingface import HFLM
