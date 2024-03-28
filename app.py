@@ -29,7 +29,6 @@ from src.display.utils import (
     COLS,
     EVAL_COLS,
     EVAL_TYPES,
-    NUMERIC_INTERVALS,
     TYPES,
     AutoEvalColumn,
     ModelType,
@@ -137,10 +136,10 @@ def filter_models(df: pd.DataFrame, type_query: list, size_query: list, precisio
     filtered_df = filtered_df.loc[df[AutoEvalColumn.model_type_symbol.name].isin(type_emoji)]
     filtered_df = filtered_df.loc[df[AutoEvalColumn.precision.name].isin(precision_query + ["None"])]
 
-    numeric_interval = pd.IntervalIndex(sorted([NUMERIC_INTERVALS[s] for s in size_query]))
-    params_column = pd.to_numeric(df[AutoEvalColumn.params.name], errors="coerce")
-    mask = params_column.apply(lambda x: any(numeric_interval.contains(x)))
-    filtered_df = filtered_df.loc[mask]
+    # numeric_interval = pd.IntervalIndex(sorted([NUMERIC_INTERVALS[s] for s in size_query]))
+    # params_column = pd.to_numeric(df[AutoEvalColumn.params.name], errors="coerce")
+    # mask = params_column.apply(lambda x: any(numeric_interval.contains(x)))
+    # filtered_df = filtered_df.loc[mask]
 
     return filtered_df
 
