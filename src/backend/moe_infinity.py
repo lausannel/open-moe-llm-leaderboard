@@ -2,7 +2,7 @@ import torch
 import os
 from transformers import AutoTokenizer
 from transformers import AutoModelForCausalLM
-# from moe_infinity import MoE
+from moe_infinity import MoE
 from typing import List, Tuple, Optional, Union
 
 from lm_eval.models.huggingface import HFLM
@@ -45,10 +45,10 @@ class MoEHFLM(HFLM):
         }
         # Update default config with any user-provided config
         final_moe_config = {**default_moe_config, **self.moe_config}
-        # self._model = MoE(self.checkpoint, final_moe_config)
-        self._model = AutoModelForCausalLM.from_pretrained(
-            self.checkpoint, torch_dtype=torch.float16, device_map="auto"
-        )
+        self._model = MoE(self.checkpoint, final_moe_config)
+        # self._model = AutoModelForCausalLM.from_pretrained(
+        #     self.checkpoint, torch_dtype=torch.float16, device_map="auto"
+        # )
 
     @property
     def max_length(self):
