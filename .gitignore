@@ -1,3 +1,9 @@
+# LM eval
+eval-queue-bk/
+eval-results-bk/
+eval-queue/
+eval-results/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
