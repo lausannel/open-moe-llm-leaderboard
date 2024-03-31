@@ -16,7 +16,7 @@ class EvalRequest:
     json_filepath: str
     weight_type: str = "Original"
     model_type: str = ""  # pretrained, finetuned, with RL
-    inference_framework: str = "HF-Chat"
+    inference_framework: str = "hf-chat"
     precision: str = ""  # float16, bfloat16
     base_model: Optional[str] = None  # for adapter models
     revision: str = "main"  # commit

@@ -134,8 +134,8 @@ class ModelType(Enum):
 
 class InferenceFramework(Enum):
     # "moe-infinity", hf-chat
-    MoE_Infinity = ModelDetails("MoE-Infinity")
-    HF_Chat = ModelDetails("HF-Chat")
+    MoE_Infinity = ModelDetails("moe-infinity")
+    HF_Chat = ModelDetails("hf-chat")
     Unknown = ModelDetails("?")
 
     def to_str(self):
