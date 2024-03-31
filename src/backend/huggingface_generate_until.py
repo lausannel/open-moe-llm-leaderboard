@@ -2,12 +2,13 @@ from typing import List, Literal, Optional, Tuple, Union
 import torch
 import transformers
 
-from lm_eval.models.huggingface import HFLM
 from lm_eval.api.registry import register_model
+
+from src.backend.hflm_with_measurement import HFLMWithMeasurement
 
 
 @register_model("hf-chat")
-class HFLMwithChatTemplate(HFLM):
+class HFLMwithChatTemplate(HFLMWithMeasurement):
     def __init__(self, use_chat_template=True, **kwargs):
         super().__init__(**kwargs)
         self.use_chat_template = use_chat_template

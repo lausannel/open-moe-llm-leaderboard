@@ -5,12 +5,13 @@ from transformers import AutoModelForCausalLM
 from moe_infinity import MoE
 from typing import List, Tuple, Optional, Union
 
-from lm_eval.models.huggingface import HFLM
 from lm_eval.api.registry import register_model
+
+from src.backend.hflm_with_measurement import HFLMWithMeasurement
 
 
 @register_model("moe-infinity")
-class MoEHFLM(HFLM):
+class MoEHFLM(HFLMWithMeasurement):
     def __init__(
         self,
         pretrained: str = "mistralai/Mixtral-8x7B-Instruct-v0.1",

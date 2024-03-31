@@ -406,8 +406,8 @@ if __name__ == "__main__":
     if local_debug:
         debug_model_names = ["mistralai/Mixtral-8x7B-Instruct-v0.1"]
         # debug_model_names = ["TheBloke/Mixtral-8x7B-v0.1-GPTQ"]
-        # debug_task_name = 'selfcheck'
-        debug_task_name = "mmlu"
+        debug_task_name = 'selfcheckgpt'
+        # debug_task_name = "mmlu"
         task_lst = TASKS_HARNESS.copy()
         for task in task_lst:
             for debug_model_name in debug_model_names:
