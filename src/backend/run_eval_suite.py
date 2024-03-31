@@ -48,7 +48,7 @@ def run_evaluation(
     )
     # hf-chat is implemented to use apply_chat_template
     results = evaluator.simple_evaluate(
-        model=eval_request.inference_framework,  # "hf-causal-experimental",  # "hf-causal", hf-chat
+        model=eval_request.inference_framework,  # "hf-chat", "moe-infinity"
         model_args=eval_request.get_model_args(),
         tasks=task_names,
         num_fewshot=num_fewshot,

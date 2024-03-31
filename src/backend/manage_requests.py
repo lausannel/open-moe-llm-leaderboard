@@ -42,6 +42,9 @@ class EvalRequest:
             # A GPTQ model does not need dtype to be specified,
             # it will be inferred from the config
             pass
+        elif self.precision == "8bit":
+            model_args += ",load_in_8bit=True"
+            model_args += ",trust_remote_code=True"
         else:
             raise Exception(f"Unknown precision {self.precision}.")
         return model_args

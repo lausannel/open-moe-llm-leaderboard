@@ -28,7 +28,10 @@ class HFLMwithChatTemplate(HFLMWithMeasurement):
                     messages = [
                         {"role": "user", "content": f"{input_string}"},
                     ]
-                    updated_string = self.tokenizer.apply_chat_template(messages, tokenize=False)
+                    if "dbrx-instruct" in self.model.name_or_path:
+                        updated_string = self.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+                    else:
+                        updated_string = self.tokenizer.apply_chat_template(messages, tokenize=False)
                     updated_strings.append(updated_string)
                 strings = updated_strings[:]
             except:
