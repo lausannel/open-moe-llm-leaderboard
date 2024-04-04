@@ -12,8 +12,11 @@ from src.backend.envs import DEVICE
 import spacy
 from selfcheckgpt.modeling_selfcheck import SelfCheckMQAG, SelfCheckNLI, SelfCheckBERTScore, SelfCheckNgram
 
+from src.backend.tasks.measurement_task_utils import measure_system_metrics
+
 
 # @register_task("selfcheckgpt")
+@measure_system_metrics
 class SelfCheckGPT(ConfigurableTask):
     VERSION = 0.0
     DATASET_PATH = "potsawee/wiki_bio_gpt3_hallucination"

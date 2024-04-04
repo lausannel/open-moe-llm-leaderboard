@@ -1,6 +1,7 @@
 import copy
 import os
 from datetime import timedelta
+import random
 from pathlib import Path
 from typing import List, Literal, Optional, Tuple, Union
 
@@ -195,7 +196,7 @@ class HFLMWithMeasurement(HFLM):
                         # for seq2seq case where self.tok_decode(self.eot_token_id) = ''
                         s = s.split(term)[0]
 
-                res.append(s)
+                res.append((s, random.random()))
 
                 self.cache_hook.add_partial("generate_until", (context, gen_kwargs), s)
                 pbar.update(1)
