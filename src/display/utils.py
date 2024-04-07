@@ -46,7 +46,7 @@ class Tasks(Enum):
 
     # # XXX include me back at some point
     selfcheck = Task("selfcheckgpt", "max-selfcheckgpt", "SelfCheckGPT")
-    mmlu = Task("mmlu", "acc", "MMLU/Acc")
+    mmlu = Task("mmlu", "acc", "MMLU/Acc (5-shot)")
 
 
 # These classes are for user facing column names,
@@ -72,6 +72,10 @@ auto_eval_column_dict.append(["model", ColumnContent, ColumnContent("Model", "ma
 
 # Inference framework
 auto_eval_column_dict.append(["inference_framework", ColumnContent, ColumnContent("Inference framework", "str", True)])
+
+# System performance metrics
+auto_eval_column_dict.append(["prefilling_time", ColumnContent, ColumnContent("Prefilling time (s)", "number", True)])
+auto_eval_column_dict.append(["token_per_second", ColumnContent, ColumnContent("Tokens/s", "number", True)])
 
 for task in Tasks:
     auto_eval_column_dict.append([task.name, ColumnContent, ColumnContent(task.value.col_name, "number", True)])
