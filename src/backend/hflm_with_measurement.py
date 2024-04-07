@@ -1,7 +1,7 @@
 import copy
 import os
 from datetime import timedelta
-import random
+from time import time
 from pathlib import Path
 from typing import List, Literal, Optional, Tuple, Union
 
@@ -22,6 +22,7 @@ from transformers.models.auto.modeling_auto import (
     MODEL_FOR_CAUSAL_LM_MAPPING_NAMES,
     MODEL_FOR_SEQ_TO_SEQ_CAUSAL_LM_MAPPING_NAMES,
 )
+from transformers import TextStreamer
 
 from lm_eval import utils
 from lm_eval.api.instance import Instance
@@ -36,6 +37,31 @@ from lm_eval.models.utils import (
 )
 from lm_eval.models.huggingface import HFLM
 
+
+class StopWatch(TextStreamer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.start_prefilling = None
+        self.prefilling_time = None
+        self.start_decoding = None
+        self.decoding_time = None
+        self.decoding_iterations = 0
+
+    def put(self, value):
+        if self.start_prefilling is None:
+            self.start_prefilling = time()
+            return
+        elif self.prefilling_time is None:
+            self.prefilling_time = time() - self.start_prefilling
+            self.start_decoding = time()
+        self.decoding_iterations += 1
+        return
+    
+    def end(self):
+        if self.decoding_time is None and self.start_decoding is not None:
+            self.decoding_time = time() - self.start_decoding
+        return
+    
 
 class HFLMWithMeasurement(HFLM):
     def __init__(self, **kwargs):
@@ -59,14 +85,27 @@ class HFLMWithMeasurement(HFLM):
         stopping_criteria = stop_sequences_criteria(
             self.tokenizer, stop, context.shape[1], context.shape[0]
         )
-        return self.model.generate(
+        stop_watch = StopWatch(self.tokenizer)
+        start = time()
+        res = self.model.generate(
             input_ids=context,
             max_length=max_length,
             stopping_criteria=stopping_criteria,
             pad_token_id=self.tokenizer.pad_token_id,
             use_cache=True,
+            streamer=stop_watch,
             **generation_kwargs,
         )
+        end = time()
+        
+        batch_size = context.shape[0]
+        output_length = stop_watch.decoding_iterations
+
+        end_to_end_time = (end - start) / batch_size
+        prefilling_time = stop_watch.prefilling_time / batch_size
+        decoding_time = stop_watch.decoding_time / batch_size
+        token_per_sec = output_length / decoding_time
+        return res, end_to_end_time, prefilling_time, token_per_sec
 
     def generate_until(
         self, requests: List[Instance], disable_tqdm: bool = False
@@ -174,7 +213,7 @@ class HFLMWithMeasurement(HFLM):
                 kwargs["max_length"] = context_enc.shape[1] + max_gen_toks
 
             # perform batched generation
-            cont = self._model_generate(
+            cont, end_to_end_time, prefilling_time, token_per_sec = self._model_generate(
                 context=context_enc,
                 attention_mask=attn_masks,
                 stop=until,
@@ -196,7 +235,7 @@ class HFLMWithMeasurement(HFLM):
                         # for seq2seq case where self.tok_decode(self.eot_token_id) = ''
                         s = s.split(term)[0]
 
-                res.append((s, random.random()))
+                res.append((s, end_to_end_time, prefilling_time, token_per_sec))
 
                 self.cache_hook.add_partial("generate_until", (context, gen_kwargs), s)
                 pbar.update(1)

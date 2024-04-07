@@ -12,7 +12,7 @@ from src.backend.run_eval_suite import run_evaluation
 from src.backend.manage_requests import check_completed_evals, get_eval_requests, set_eval_request
 from src.backend.sort_queue import sort_models_by_priority
 from src.backend.envs import Tasks, EVAL_REQUESTS_PATH_BACKEND, EVAL_RESULTS_PATH_BACKEND, DEVICE, LIMIT, Task
-
+LIMIT=2
 from src.backend.manage_requests import EvalRequest
 from src.leaderboard.read_evals import EvalResult
 
@@ -124,7 +124,7 @@ def request_to_result_name(request: EvalRequest) -> str:
 
 
 def process_evaluation(task: Task, eval_request: EvalRequest) -> dict:
-    batch_size = 4
+    batch_size = 1
     try:
         results = run_evaluation(
             eval_request=eval_request,
@@ -404,7 +404,8 @@ if __name__ == "__main__":
     local_debug = args.debug
     # debug specific task by ping
     if local_debug:
-        debug_model_names = ["mistralai/Mixtral-8x7B-Instruct-v0.1"]
+        # debug_model_names = ["mistralai/Mixtral-8x7B-Instruct-v0.1"]
+        debug_model_names = ["facebook/opt-1.3b"]
         # debug_model_names = ["TheBloke/Mixtral-8x7B-v0.1-GPTQ"]
         debug_task_name = 'selfcheckgpt'
         # debug_task_name = "mmlu"
@@ -415,7 +416,7 @@ if __name__ == "__main__":
                 if task_name != debug_task_name:
                     continue
                 eval_request = EvalRequest(
-                    model=debug_model_name, private=False, status="", json_filepath="", precision="float16"
+                    model=debug_model_name, private=False, status="", json_filepath="", precision="float16", inference_framework="hf-chat"
                 )
                 results = process_evaluation(task, eval_request)
     else:
