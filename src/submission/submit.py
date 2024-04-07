@@ -25,6 +25,7 @@ def add_new_eval(
     private: bool,
     weight_type: str,
     model_type: str,
+    inference_framework: str,
 ):
     global REQUESTED_MODELS
     global USERS_TO_SUBMISSION_DATES
@@ -85,6 +86,8 @@ def add_new_eval(
         license = model_info.cardData["license"]
     except Exception:
         return styled_error("Please select a license for your model")
+    
+    # TODO: Check if the inference framework is valid
 
     modelcard_OK, error_msg = check_model_card(model)
     if not modelcard_OK:
@@ -106,6 +109,7 @@ def add_new_eval(
         "likes": model_info.likes,
         "params": model_size,
         "license": license,
+        "inference_framework": inference_framework,
     }
 
     # Check for duplicate submission

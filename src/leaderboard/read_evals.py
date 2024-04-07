@@ -49,8 +49,6 @@ class EvalResult:
         with open(json_filepath) as fp:
             data = json.load(fp)
 
-        inference_framework = data.get("inference_framework", "Unknown")
-
         # We manage the legacy config format
         config = data.get("config", data.get("config_general", None))
 
@@ -60,6 +58,9 @@ class EvalResult:
         # Get model and org
         org_and_model = config.get("model_name", config.get("model_args", None))
         org_and_model = org_and_model.split("/", 1)
+
+        # Get inference framework
+        inference_framework = config.get("inference_framework", "Unknown")
 
         if len(org_and_model) == 1:
             org = None

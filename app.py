@@ -369,6 +369,7 @@ with demo:
                     private,
                     weight_type,
                     model_type,
+                    inference_framework,
                 ],
                 submission_result,
             )
