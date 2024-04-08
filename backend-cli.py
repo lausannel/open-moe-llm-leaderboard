@@ -11,7 +11,7 @@ from datetime import datetime
 from src.backend.run_eval_suite import run_evaluation
 from src.backend.manage_requests import check_completed_evals, get_eval_requests, set_eval_request
 from src.backend.sort_queue import sort_models_by_priority
-from src.backend.envs import Tasks, EVAL_REQUESTS_PATH_BACKEND, EVAL_RESULTS_PATH_BACKEND, DEVICE, LIMIT, Task
+from src.backend.envs import Tasks, EVAL_REQUESTS_PATH_BACKEND, EVAL_RESULTS_PATH_BACKEND, DEVICE, Task
 from src.backend.manage_requests import EvalRequest
 from src.leaderboard.read_evals import EvalResult
 
@@ -122,7 +122,7 @@ def request_to_result_name(request: EvalRequest) -> str:
     return res
 
 
-def process_evaluation(task: Task, eval_request: EvalRequest) -> dict:
+def process_evaluation(task: Task, eval_request: EvalRequest, limit: Optional[int] = None) -> dict:
     batch_size = 1
     try:
         results = run_evaluation(
@@ -132,7 +132,7 @@ def process_evaluation(task: Task, eval_request: EvalRequest) -> dict:
             batch_size=batch_size,
             device=DEVICE,
             use_cache=None,
-            limit=LIMIT,
+            limit=limit,
         )
     except RuntimeError as e:
         if "No executable batch size found" in str(e):
@@ -144,7 +144,7 @@ def process_evaluation(task: Task, eval_request: EvalRequest) -> dict:
                 batch_size=batch_size,
                 device=DEVICE,
                 use_cache=None,
-                limit=LIMIT,
+                limit=limit,
             )
         else:
             raise
@@ -395,6 +395,12 @@ def process_pending_requests() -> bool:
 def get_args():
     parser = argparse.ArgumentParser(description="Run the backend")
     parser.add_argument("--debug", action="store_true", help="Run in debug mode")
+    # debug parameters
+    parser.add_argument("--task", type=str, default="selfcheckgpt", help="Task to debug")
+    parser.add_argument("--model", type=str, default="facebook/opt-1.3b", help="Model to debug")
+    parser.add_argument("--precision", type=str, default="float16", help="Precision to debug")
+    parser.add_argument("--inference-framework", type=str, default="hf-chat", help="Inference framework to debug")
+    parser.add_argument("--limit", type=int, default=None, help="Limit for the number of samples")
     return parser.parse_args()
 
 
@@ -403,11 +409,8 @@ if __name__ == "__main__":
     local_debug = args.debug
     # debug specific task by ping
     if local_debug:
-        # debug_model_names = ["mistralai/Mixtral-8x7B-Instruct-v0.1"]
-        debug_model_names = ["facebook/opt-1.3b"]
-        # debug_model_names = ["TheBloke/Mixtral-8x7B-v0.1-GPTQ"]
-        debug_task_name = 'selfcheckgpt'
-        # debug_task_name = "mmlu"
+        debug_model_names = [args.model]  # Use model from arguments
+        debug_task_name = args.task  # Use task from arguments
         task_lst = TASKS_HARNESS.copy()
         for task in task_lst:
             for debug_model_name in debug_model_names:
@@ -415,9 +418,14 @@ if __name__ == "__main__":
                 if task_name != debug_task_name:
                     continue
                 eval_request = EvalRequest(
-                    model=debug_model_name, private=False, status="", json_filepath="", precision="float16", inference_framework="hf-chat"
+                    model=debug_model_name, 
+                    private=False, 
+                    status="", 
+                    json_filepath="", 
+                    precision=args.precision,  # Use precision from arguments
+                    inference_framework=args.inference_framework  # Use inference framework from arguments
                 )
-                results = process_evaluation(task, eval_request)
+                results = process_evaluation(task, eval_request, limit=args.limit)
     else:
         while True:
             res = False
