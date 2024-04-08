@@ -123,7 +123,7 @@ def request_to_result_name(request: EvalRequest) -> str:
 
 
 def process_evaluation(task: Task, eval_request: EvalRequest, limit: Optional[int] = None) -> dict:
-    batch_size = 1
+    batch_size = 4
     try:
         results = run_evaluation(
             eval_request=eval_request,
