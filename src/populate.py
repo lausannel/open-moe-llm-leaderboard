@@ -30,7 +30,8 @@ def get_leaderboard_df(
                 raw_data[result_idx], requests_path_open_llm
             )
 
-    all_data_json_ = [v.to_dict() for v in raw_data if v.is_complete()]
+    # all_data_json_ = [v.to_dict() for v in raw_data if v.is_complete()]
+    all_data_json_ = [v.to_dict() for v in raw_data] # include incomplete evals
 
     name_to_bm_map = {}
 
@@ -45,15 +46,22 @@ def get_leaderboard_df(
         name_to_bm_map[name] = bm
 
     # bm_to_name_map = {bm: name for name, bm in name_to_bm_map.items()}
+    system_metrics_to_name_map = {
+        "end_to_end_time": "End-to-end time (s)",
+        "prefilling_time": "Prefilling time (s)",
+        "decoding_throughput": "Decoding throughput (tok/s)",
+    }
 
     all_data_json = []
     for entry in all_data_json_:
         new_entry = copy.deepcopy(entry)
-
         for k, v in entry.items():
             if k in name_to_bm_map:
                 benchmark, metric = name_to_bm_map[k]
                 new_entry[k] = entry[k][metric]
+                for sys_metric, metric_namne in system_metrics_to_name_map.items():
+                    if sys_metric in entry[k]:
+                        new_entry[f"{k} {metric_namne}"] = entry[k][sys_metric]
 
         all_data_json += [new_entry]
 
@@ -69,10 +77,10 @@ def get_leaderboard_df(
             df[col] = np.nan
 
     if not df.empty:
-        df = df[cols].round(decimals=2)
+        df = df.round(decimals=2)
 
         # filter out if any of the benchmarks have not been produced
-        df = df[has_no_nan_values(df, benchmark_cols)]
+        # df = df[has_no_nan_values(df, benchmark_cols)]
 
     return raw_data, df
 

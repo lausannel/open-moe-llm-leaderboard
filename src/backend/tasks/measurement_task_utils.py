@@ -8,21 +8,17 @@ def process_results_decorator(func):
     def wrapper(self, doc, results, *args, **kwargs):
         # We process the results here
         processed_results = [r[0] for r in results]
-
-        # end_to_end_time = end_to_end_time / batch_size
-        # prefilling_time = prefilling_time / batch_size
-        # token_per_sec = output_length / (decoding_time / batch_size)
         
         end_to_end_time = sum([r[1] for r in results]) / len(results)
         prefilling_time = sum([r[2] for r in results]) / len(results)
-        token_per_sec = sum([r[3] for r in results]) / len(results)
-        print(f"end_to_end_time: {end_to_end_time}, prefilling_time: {prefilling_time}, token_per_sec: {token_per_sec}")
+        decoding_throughput = sum([r[3] for r in results]) / len(results)
+        print(f"end_to_end_time: {end_to_end_time}, prefilling_time: {prefilling_time}, decoding_throughput: {decoding_throughput}")
 
         # Now call the original process_results with the processed results
         result_dict = func(self, doc, processed_results, *args, **kwargs)
         result_dict["end_to_end_time"] = end_to_end_time
         result_dict["prefilling_time"] = prefilling_time
-        result_dict["token_per_sec"] = token_per_sec
+        result_dict["decoding_throughput"] = decoding_throughput
         return result_dict
     return wrapper
 
@@ -33,7 +29,7 @@ def aggregation_decorator(func):
         aggregation_list = func(self, *args, **kwargs)
         aggregation_list["end_to_end_time"] = mean
         aggregation_list["prefilling_time"] = mean
-        aggregation_list["token_per_sec"] = mean
+        aggregation_list["decoding_throughput"] = mean
         return aggregation_list
     return wrapper
 
@@ -44,7 +40,7 @@ def higher_is_better_decorator(func):
         higher_is_better_dict = func(self, *args, **kwargs)
         higher_is_better_dict["end_to_end_time"] = False
         higher_is_better_dict["prefilling_time"] = False
-        higher_is_better_dict["token_per_sec"] = True
+        higher_is_better_dict["decoding_throughput"] = True
         return higher_is_better_dict
     return wrapper
 

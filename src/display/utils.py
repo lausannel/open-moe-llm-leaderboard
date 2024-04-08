@@ -73,12 +73,12 @@ auto_eval_column_dict.append(["model", ColumnContent, ColumnContent("Model", "ma
 # Inference framework
 auto_eval_column_dict.append(["inference_framework", ColumnContent, ColumnContent("Inference framework", "str", True)])
 
-# System performance metrics
-auto_eval_column_dict.append(["prefilling_time", ColumnContent, ColumnContent("Prefilling time (s)", "number", True)])
-auto_eval_column_dict.append(["token_per_second", ColumnContent, ColumnContent("Tokens/s", "number", True)])
-
 for task in Tasks:
     auto_eval_column_dict.append([task.name, ColumnContent, ColumnContent(task.value.col_name, "number", True)])
+    # System performance metrics
+    auto_eval_column_dict.append([f"{task.name}_end_to_end_time", ColumnContent, ColumnContent(f"{task.value.col_name} End-to-end time (s)", "number", True)])
+    auto_eval_column_dict.append([f"{task.name}_prefilling_time", ColumnContent, ColumnContent(f"{task.value.col_name} Prefilling time (s)", "number", True)])
+    auto_eval_column_dict.append([f"{task.name}_decoding_throughput", ColumnContent, ColumnContent(f"{task.value.col_name} Decoding throughput (tok/s)", "number", True)])
 
 # Model information
 auto_eval_column_dict.append(["model_type", ColumnContent, ColumnContent("Type", "str", False)])

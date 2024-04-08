@@ -107,7 +107,10 @@ class EvalResult:
                         multiplier = 1.0
                     if "squad" in benchmark:
                         multiplier = 1.0
-
+                    if "time" in metric:
+                        multiplier = 1.0
+                    if "throughput" in metric:
+                        multiplier = 1.0
                     # print('RESULTS', data['results'])
                     # print('XXX', benchmark, metric, value, multiplier)
                     results[benchmark][metric] = value * multiplier

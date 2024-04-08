@@ -12,7 +12,6 @@ from src.backend.run_eval_suite import run_evaluation
 from src.backend.manage_requests import check_completed_evals, get_eval_requests, set_eval_request
 from src.backend.sort_queue import sort_models_by_priority
 from src.backend.envs import Tasks, EVAL_REQUESTS_PATH_BACKEND, EVAL_RESULTS_PATH_BACKEND, DEVICE, LIMIT, Task
-LIMIT=2
 from src.backend.manage_requests import EvalRequest
 from src.leaderboard.read_evals import EvalResult
 
@@ -150,10 +149,10 @@ def process_evaluation(task: Task, eval_request: EvalRequest) -> dict:
         else:
             raise
 
-    print("RESULTS", results)
+    # print("RESULTS", results)
 
     dumped = json.dumps(results, indent=2, default=lambda o: "<not serializable>")
-    print(dumped)
+    # print(dumped)
 
     output_path = os.path.join(
         EVAL_RESULTS_PATH_BACKEND, *eval_request.model.split("/"), f"results_{datetime.now()}.json"
