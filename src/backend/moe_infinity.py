@@ -1,5 +1,6 @@
 import torch
 import os
+import shutil
 from transformers import AutoTokenizer
 from transformers import AutoModelForCausalLM
 from moe_infinity import MoE
@@ -34,6 +35,11 @@ class MoEHFLM(HFLMWithMeasurement):
             *args, **kwargs, pretrained=pretrained, device_map="cuda:0"
         )  # Assuming HFLM accepts a 'pretrained' arg and handles it
         # self._create_model()
+        shutil.rmtree(os.path.join(self.offload_path, "moe-infinity-offloads"))
+
+    def __del__(self):
+        # Clean up offloaded models from self.offload_path
+        shutil.rmtree(os.path.join(self.offload_path, "moe-infinity-offloads"))
 
     def _create_model(self, *args, **kwargs):
         """
@@ -46,7 +52,18 @@ class MoEHFLM(HFLMWithMeasurement):
         }
         # Update default config with any user-provided config
         final_moe_config = {**default_moe_config, **self.moe_config}
+
+        # dirty fix, to be removed when MoE-infinity supports move input to correct device
+        def MoEGenDecorator(func):
+            def wrapper(*args, **kwargs):
+                # Ensure all tensor in the input are in the same device as the model
+                args = [arg.to("cuda:0") if isinstance(arg, torch.Tensor) else arg for arg in args]
+                kwargs = {k: v.to("cuda:0") if isinstance(v, torch.Tensor) else v for k, v in kwargs.items()}
+                return func(*args, **kwargs)
+            return wrapper
+
         self._model = MoE(self.checkpoint, final_moe_config)
+        self._model.generate = MoEGenDecorator(self._model.generate)
         # self._model = AutoModelForCausalLM.from_pretrained(
         #     self.checkpoint, torch_dtype=torch.float16, device_map="auto"
         # )
