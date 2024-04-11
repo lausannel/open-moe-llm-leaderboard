@@ -1,5 +1,5 @@
 ---
-title: MOE-LLM-GPU-POOR_LEADERBOARD
+title: OPEN-MOE-LLM-LEADERBOARD
 emoji: 🔥
 colorFrom: green
 colorTo: indigo
