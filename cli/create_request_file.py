@@ -9,7 +9,7 @@ from colorama import Fore
 from huggingface_hub import HfApi, snapshot_download
 
 EVAL_REQUESTS_PATH = "eval-queue"
-QUEUE_REPO = "PingAndPasquale/requests"
+QUEUE_REPO = "sparse-generative-ai/requests"
 
 precisions = ("float16", "bfloat16", "8bit (LLM.int8)", "4bit (QLoRA / FP4)", "GPTQ")
 model_types = ("pretrained", "fine-tuned", "RL-tuned", "instruction-tuned")

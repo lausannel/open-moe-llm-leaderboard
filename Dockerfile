@@ -1,5 +1,5 @@
 # Use specific python image
-FROM registry.hf.space/pingandpasquale-moe-llm-gpu-poor-leaderboard:latest
+FROM registry.hf.space/sparse-generative-ai-open-moe-llm-leaderboard:latest
 
 RUN pip install -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ moe-infinity --no-cache-dir
 # To fix pydantic version
