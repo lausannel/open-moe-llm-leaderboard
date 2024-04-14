@@ -113,13 +113,14 @@ def add_new_eval(
     }
 
     # Check for duplicate submission
-    if f"{model}_{revision}_{precision}" in REQUESTED_MODELS:
+    if f"{model}_{revision}_{precision}_{inference_framework}" in REQUESTED_MODELS:
         return styled_warning("This model has been already submitted.")
 
     print("Creating eval file")
     OUT_DIR = f"{EVAL_REQUESTS_PATH}/{user_name}"
     os.makedirs(OUT_DIR, exist_ok=True)
-    out_path = f"{OUT_DIR}/{model_path}_eval_request_{private}_{precision}_{weight_type}.json"
+    # out_path = f"{OUT_DIR}/{model_path}_eval_request_{private}_{precision}_{weight_type}.json"
+    out_path = f"{OUT_DIR}/{model_path}_eval_request_{private}_{precision}_{weight_type}_{inference_framework}.json"
 
     with open(out_path, "w") as f:
         f.write(json.dumps(eval_entry))

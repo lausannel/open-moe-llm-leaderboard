@@ -12,7 +12,7 @@ from src.backend.tasks.cnndm.task_v2 import CNNDMv2
 from src.backend.tasks.selfcheckgpt.task import SelfCheckGPT
 
 from src.backend.huggingface_generate_until import HFLMwithChatTemplate
-from src.backend.moe_infinity import MoEHFLM  # MoEInfinity
+from src.backend.moe_infinity import MoEHFLM
 
 def run_evaluation(
     eval_request: EvalRequest,
