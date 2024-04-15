@@ -18,7 +18,7 @@ tqdm
 wandb
 transformers>=4.36.0
 tokenizers>=0.15.0
-lm_eval[ifeval] @ git+https://github.com/EleutherAI/lm-evaluation-harness.git@0.4.2
+lm_eval[ifeval] @ git+https://github.com/EleutherAI/lm-evaluation-harness.git@v0.4.2
 accelerate
 sentencepiece
 langdetect
