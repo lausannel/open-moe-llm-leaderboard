@@ -12,7 +12,7 @@ def process_results_decorator(func):
         end_to_end_time = sum([r[1] for r in results]) / len(results)
         prefilling_time = sum([r[2] for r in results]) / len(results)
         decoding_throughput = sum([r[3] for r in results]) / len(results)
-        print(f"end_to_end_time: {end_to_end_time}, prefilling_time: {prefilling_time}, decoding_throughput: {decoding_throughput}")
+        # print(f"end_to_end_time: {end_to_end_time}, prefilling_time: {prefilling_time}, decoding_throughput: {decoding_throughput}")
 
         # Now call the original process_results with the processed results
         result_dict = func(self, doc, processed_results, *args, **kwargs)

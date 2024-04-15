@@ -1,13 +1,57 @@
 from lm_eval import evaluator
 from lm_eval.tasks import TaskManager
+from lm_eval.api.metrics import mean
+from lm_eval.api.task import ConfigurableTask
 
 from src.backend.manage_requests import EvalRequest
 
-from src.backend.tasks.xsum.task import XSum
-from src.backend.tasks.xsum.task_v2 import XSumv2
 
-from src.backend.tasks.cnndm.task import CNNDM
-from src.backend.tasks.cnndm.task_v2 import CNNDMv2
+orig_process_results = ConfigurableTask.process_results
+orig_aggregation = ConfigurableTask.aggregation
+orig_higher_is_better = ConfigurableTask.higher_is_better
+
+def process_results_decorator(func):
+    def wrapper(self, doc, results, *args, **kwargs):
+        processed_results = [r[0] for r in results]
+        
+        end_to_end_time = sum([r[1] for r in results]) / len(results)
+        prefilling_time = sum([r[2] for r in results]) / len(results)
+        decoding_throughput = sum([r[3] for r in results]) / len(results)
+        # print(f"end_to_end_time: {end_to_end_time}, prefilling_time: {prefilling_time}, decoding_throughput: {decoding_throughput}")
+
+        result_dict = func(self, doc, processed_results, *args, **kwargs)
+        result_dict["end_to_end_time"] = end_to_end_time
+        result_dict["prefilling_time"] = prefilling_time
+        result_dict["decoding_throughput"] = decoding_throughput
+        return result_dict
+    return wrapper
+ConfigurableTask.process_results = process_results_decorator(orig_process_results)
+
+def aggregation_decorator(func):
+    def wrapper(self, *args, **kwargs):
+        aggregation_list = func(self, *args, **kwargs)
+        aggregation_list["end_to_end_time"] = mean
+        aggregation_list["prefilling_time"] = mean
+        aggregation_list["decoding_throughput"] = mean
+        return aggregation_list
+    return wrapper
+ConfigurableTask.aggregation = aggregation_decorator(orig_aggregation)
+
+def higher_is_better_decorator(func):
+    def wrapper(self, *args, **kwargs):
+        higher_is_better_dict = func(self, *args, **kwargs)
+        higher_is_better_dict["end_to_end_time"] = False
+        higher_is_better_dict["prefilling_time"] = False
+        higher_is_better_dict["decoding_throughput"] = True
+        return higher_is_better_dict
+    return wrapper
+ConfigurableTask.higher_is_better = higher_is_better_decorator(orig_higher_is_better)
+
+# from src.backend.tasks.xsum.task import XSum
+# from src.backend.tasks.xsum.task_v2 import XSumv2
+
+# from src.backend.tasks.cnndm.task import CNNDM
+# from src.backend.tasks.cnndm.task_v2 import CNNDMv2
 
 from src.backend.tasks.selfcheckgpt.task import SelfCheckGPT
 
