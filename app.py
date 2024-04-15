@@ -156,7 +156,7 @@ with demo:
     gr.Markdown(INTRODUCTION_TEXT, elem_classes="markdown-text")
 
     with gr.Tabs(elem_classes="tab-buttons") as tabs:
-        with gr.TabItem("MOE-LLM-GPU-Poor-Leaderboard Benchmark", elem_id="llm-benchmark-tab-table", id=0):
+        with gr.TabItem("open-moe-llm-leaderboard", elem_id="llm-benchmark-tab-table", id=0):
             with gr.Row():
                 with gr.Column():
                     with gr.Row():
@@ -324,7 +324,7 @@ with demo:
                     value=None,
                     interactive=True,
                 )
-                
+
             with gr.Row():
                 with gr.Column():
                     model_name_textbox = gr.Textbox(label="Model name")

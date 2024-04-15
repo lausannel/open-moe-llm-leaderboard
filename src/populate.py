@@ -12,7 +12,7 @@ from src.leaderboard.read_evals import get_raw_eval_results, EvalResult, update_
 
 from src.backend.envs import Tasks as BackendTasks
 from src.display.utils import Tasks
-
+from src.display.utils import E2Es, PREs, TS
 
 def get_leaderboard_df(
     results_path: str,
@@ -47,9 +47,9 @@ def get_leaderboard_df(
 
     # bm_to_name_map = {bm: name for name, bm in name_to_bm_map.items()}
     system_metrics_to_name_map = {
-        "end_to_end_time": "End-to-end time (s)",
-        "prefilling_time": "Prefilling time (s)",
-        "decoding_throughput": "Decoding throughput (tok/s)",
+        "end_to_end_time": f"{E2Es}",
+        "prefilling_time": f"{PREs}",
+        "decoding_throughput": f"{TS}",
     }
 
     all_data_json = []

@@ -7,6 +7,11 @@ import pandas as pd
 def fields(raw_class):
     return [v for k, v in raw_class.__dict__.items() if k[:2] != "__" and k[-2:] != "__"]
 
+E2Es = "E2E(s)" #"End-to-end time (s)"
+PREs = "PRE(s)" #"Prefilling time (s)"
+TS = "T/s" #Decoding throughput (tok/s)
+InFrame = "Method" #"Inference framework"
+MULTIPLE_CHOICEs = ["mmlu"]
 
 @dataclass
 class Task:
@@ -46,7 +51,7 @@ class Tasks(Enum):
 
     # # XXX include me back at some point
     selfcheck = Task("selfcheckgpt", "max-selfcheckgpt", "SelfCheckGPT")
-    mmlu = Task("mmlu", "acc", "MMLU/Acc (5-shot)")
+    mmlu = Task("mmlu", "acc", "MMLU") #MMLU/Acc (5-shot)
 
 
 # These classes are for user facing column names,
@@ -71,20 +76,22 @@ auto_eval_column_dict.append(["model", ColumnContent, ColumnContent("Model", "ma
 # # auto_eval_column_dict.append(["average", ColumnContent, ColumnContent("Avg", "number", True)])
 
 # Inference framework
-auto_eval_column_dict.append(["inference_framework", ColumnContent, ColumnContent("Inference framework", "str", True)])
+auto_eval_column_dict.append(["inference_framework", ColumnContent, ColumnContent(f"{InFrame}", "str", True)])
 
 for task in Tasks:
     auto_eval_column_dict.append([task.name, ColumnContent, ColumnContent(task.value.col_name, "number", True)])
     # System performance metrics
-    auto_eval_column_dict.append([f"{task.name}_end_to_end_time", ColumnContent, ColumnContent(f"{task.value.col_name} End-to-end time (s)", "number", True)])
-    auto_eval_column_dict.append([f"{task.name}_prefilling_time", ColumnContent, ColumnContent(f"{task.value.col_name} Prefilling time (s)", "number", True)])
-    auto_eval_column_dict.append([f"{task.name}_decoding_throughput", ColumnContent, ColumnContent(f"{task.value.col_name} Decoding throughput (tok/s)", "number", True)])
+    auto_eval_column_dict.append([f"{task.name}_end_to_end_time", ColumnContent, ColumnContent(f"{task.value.col_name}-{E2Es}", "number", True)])
+    if task.value.benchmark in MULTIPLE_CHOICEs:
+        continue
+    auto_eval_column_dict.append([f"{task.name}_prefilling_time", ColumnContent, ColumnContent(f"{task.value.col_name}-{PREs}", "number", True)])
+    auto_eval_column_dict.append([f"{task.name}_decoding_throughput", ColumnContent, ColumnContent(f"{task.value.col_name}-{TS}", "number", True)])
 
 # Model information
 auto_eval_column_dict.append(["model_type", ColumnContent, ColumnContent("Type", "str", False)])
 auto_eval_column_dict.append(["architecture", ColumnContent, ColumnContent("Architecture", "str", False)])
 auto_eval_column_dict.append(["weight_type", ColumnContent, ColumnContent("Weight type", "str", False, True)])
-auto_eval_column_dict.append(["precision", ColumnContent, ColumnContent("Precision", "str", False)])
+auto_eval_column_dict.append(["precision", ColumnContent, ColumnContent("Precision", "str", True)])
 auto_eval_column_dict.append(["license", ColumnContent, ColumnContent("Hub License", "str", False)])
 auto_eval_column_dict.append(["params", ColumnContent, ColumnContent("#Params (B)", "number", False)])
 auto_eval_column_dict.append(["likes", ColumnContent, ColumnContent("Hub ❤️", "number", False)])
@@ -144,7 +151,7 @@ class InferenceFramework(Enum):
 
     def to_str(self):
         return self.value.name
-    
+
     @staticmethod
     def from_str(inference_framework: str):
         if inference_framework in ["moe-infinity"]:
@@ -152,7 +159,7 @@ class InferenceFramework(Enum):
         if inference_framework in ["hf-chat"]:
             return InferenceFramework.HF_Chat
         return InferenceFramework.Unknown
-    
+
 
 class WeightType(Enum):
     Adapter = ModelDetails("Adapter")
