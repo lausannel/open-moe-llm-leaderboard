@@ -13,7 +13,7 @@ orig_higher_is_better = ConfigurableTask.higher_is_better
 def process_results_decorator(func):
     def wrapper(self, doc, results, *args, **kwargs):
         processed_results = [r[0] for r in results]
-        
+
         end_to_end_time = sum([r[1] for r in results]) / len(results)
         prefilling_time = sum([r[2] for r in results]) / len(results)
         decoding_throughput = sum([r[3] for r in results]) / len(results)

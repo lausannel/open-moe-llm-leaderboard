@@ -27,10 +27,11 @@ class EvalRequest:
     likes: Optional[int] = 0
     params: Optional[int] = None
     license: Optional[str] = ""
+    batch_size: Optional[int] = 1
 
     def get_model_args(self) -> str:
         model_args = f"pretrained={self.model},revision={self.revision},parallelize=True"  # ,max_length=4096"
-
+        model_args += ",trust_remote_code=True"
         if self.precision in ["float16", "float32", "bfloat16"]:
             model_args += f",dtype={self.precision}"
             # Quantized models need some added config, the install of bits and bytes, etc
@@ -44,7 +45,6 @@ class EvalRequest:
             pass
         elif self.precision == "8bit":
             model_args += ",load_in_8bit=True"
-            model_args += ",trust_remote_code=True"
         else:
             raise Exception(f"Unknown precision {self.precision}.")
         return model_args

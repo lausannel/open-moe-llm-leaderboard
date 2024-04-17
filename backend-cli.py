@@ -6,6 +6,7 @@ import argparse
 
 import socket
 import random
+import threading
 from datetime import datetime
 
 from src.backend.run_eval_suite import run_evaluation
@@ -16,7 +17,7 @@ from src.backend.manage_requests import EvalRequest
 from src.leaderboard.read_evals import EvalResult
 
 from src.envs import QUEUE_REPO, RESULTS_REPO, API
-from src.utils import my_snapshot_download
+from src.utils import my_snapshot_download, analyze_gpu_stats, parse_nvidia_smi, monitor_gpus
 
 from src.leaderboard.read_evals import get_raw_eval_results
 
@@ -123,7 +124,16 @@ def request_to_result_name(request: EvalRequest) -> str:
 
 
 def process_evaluation(task: Task, eval_request: EvalRequest, limit: Optional[int] = None) -> dict:
-    batch_size = 4
+    batch_size = eval_request.batch_size
+
+    init_gpu_info = analyze_gpu_stats(parse_nvidia_smi())
+    # if init_gpu_info['Mem(M)'] > 500:
+    #     assert False, f"This machine is not empty: {init_gpu_info}"
+    gpu_stats_list = []
+    stop_event = threading.Event()
+    monitor_thread = threading.Thread(target=monitor_gpus, args=(stop_event, 5, gpu_stats_list))
+    monitor_thread.start()
+
     try:
         results = run_evaluation(
             eval_request=eval_request,
@@ -150,6 +160,14 @@ def process_evaluation(task: Task, eval_request: EvalRequest, limit: Optional[in
             raise
 
     # print("RESULTS", results)
+    stop_event.set()
+    monitor_thread.join()
+    gpu_info = analyze_gpu_stats(gpu_stats_list)
+    for task_name in results['results'].keys():
+        for key, value in gpu_info.items():
+            results['results'][task_name][f"{key},none"] = int(value)
+
+    print("GPU Usage:", gpu_info)
 
     dumped = json.dumps(results, indent=2, default=lambda o: "<not serializable>")
     # print(dumped)
@@ -409,23 +427,27 @@ if __name__ == "__main__":
     local_debug = args.debug
     # debug specific task by ping
     if local_debug:
-        debug_model_names = [args.model]  # Use model from arguments
-        debug_task_name = args.task  # Use task from arguments
+        # debug_model_names = [args.model]  # Use model from arguments
+        # debug_task_name = [args.task]  # Use task from arguments
+        debug_model_names = ["mistralai/Mixtral-8x7B-Instruct-v0.1", "mistralai/Mixtral-8x7B-v0.1"]  # Use model from arguments
+        debug_task_name = ['mmlu', 'selfcheckgpt']  # Use task from arguments
+        precisions = ['float16', 'float16', '8bit']
         task_lst = TASKS_HARNESS.copy()
-        for task in task_lst:
-            for debug_model_name in debug_model_names:
-                task_name = task.benchmark
-                if task_name != debug_task_name:
-                    continue
-                eval_request = EvalRequest(
-                    model=debug_model_name, 
-                    private=False, 
-                    status="", 
-                    json_filepath="", 
-                    precision=args.precision,  # Use precision from arguments
-                    inference_framework=args.inference_framework  # Use inference framework from arguments
-                )
-                results = process_evaluation(task, eval_request, limit=args.limit)
+        for precision in precisions:
+            for task in task_lst:
+                for debug_model_name in debug_model_names:
+                    task_name = task.benchmark
+                    if task_name not in debug_task_name:
+                        continue
+                    eval_request = EvalRequest(
+                        model=debug_model_name,
+                        private=False,
+                        status="",
+                        json_filepath="",
+                        precision=args.precision,  # Use precision from arguments
+                        inference_framework=args.inference_framework  # Use inference framework from arguments
+                    )
+                    results = process_evaluation(task, eval_request, limit=args.limit)
     else:
         while True:
             res = False

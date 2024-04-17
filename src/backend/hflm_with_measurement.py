@@ -57,12 +57,12 @@ class StopWatch(TextStreamer):
             self.start_decoding = time()
         self.decoding_iterations += 1
         return
-    
+
     def end(self):
         if self.decoding_time is None and self.start_decoding is not None:
             self.decoding_time = time() - self.start_decoding
         return
-    
+
 
 class HFLMWithMeasurement(HFLM):
     def __init__(self, **kwargs):
@@ -287,7 +287,7 @@ class HFLMWithMeasurement(HFLM):
         pbar.close()
 
         return re_ord.get_original(res)
-    
+
     def _model_generate(self, context, max_length, stop, **generation_kwargs):
         # temperature = 0.0 if not set
         # if do_sample is false and temp==0.0:
@@ -318,7 +318,7 @@ class HFLMWithMeasurement(HFLM):
             **generation_kwargs,
         )
         end = time()
-        
+
         batch_size = context.shape[0]
         output_length = stop_watch.decoding_iterations
 
@@ -403,7 +403,7 @@ class HFLMWithMeasurement(HFLM):
                     f"Expected `kwargs` to be of type `dict` but got {type(gen_kwargs)}"
                 )
             # add EOS token to stop sequences
-            eos = self.tok_decode(self.eot_token_id, skip_special_tokens=False)
+            eos = self.tok_decode(self.eot_token_id)
             if not until:
                 until = [eos]
             else:

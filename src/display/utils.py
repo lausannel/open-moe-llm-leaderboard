@@ -13,6 +13,11 @@ TS = "T/s" #Decoding throughput (tok/s)
 InFrame = "Method" #"Inference framework"
 MULTIPLE_CHOICEs = ["mmlu"]
 
+GPU_TEMP = 'Temp(C)'
+GPU_Power = 'Power(W)'
+GPU_Mem = 'Mem(M)'
+GPU_Util = 'Util(%)'
+
 @dataclass
 class Task:
     benchmark: str
@@ -81,11 +86,16 @@ auto_eval_column_dict.append(["inference_framework", ColumnContent, ColumnConten
 for task in Tasks:
     auto_eval_column_dict.append([task.name, ColumnContent, ColumnContent(task.value.col_name, "number", True)])
     # System performance metrics
-    auto_eval_column_dict.append([f"{task.name}_end_to_end_time", ColumnContent, ColumnContent(f"{task.value.col_name}-{E2Es}", "number", True)])
+    auto_eval_column_dict.append([f"{task.name}_end_to_end_time", ColumnContent, ColumnContent(f"{task.value.col_name} {E2Es}", "number", True)])
     if task.value.benchmark in MULTIPLE_CHOICEs:
         continue
-    auto_eval_column_dict.append([f"{task.name}_prefilling_time", ColumnContent, ColumnContent(f"{task.value.col_name}-{PREs}", "number", True)])
-    auto_eval_column_dict.append([f"{task.name}_decoding_throughput", ColumnContent, ColumnContent(f"{task.value.col_name}-{TS}", "number", True)])
+    auto_eval_column_dict.append([f"{task.name}_prefilling_time", ColumnContent, ColumnContent(f"{task.value.col_name} {PREs}", "number", True)])
+    auto_eval_column_dict.append([f"{task.name}_decoding_throughput", ColumnContent, ColumnContent(f"{task.value.col_name} {TS}", "number", True)])
+
+    auto_eval_column_dict.append([f"{task.name}_gpu_mem", ColumnContent, ColumnContent(f"{task.value.col_name} {GPU_Mem}", "number", True)])
+    auto_eval_column_dict.append([f"{task.name}_gpu_power", ColumnContent, ColumnContent(f"{task.value.col_name} {GPU_Power}", "number", True)])
+    auto_eval_column_dict.append([f"{task.name}_gpu_temp", ColumnContent, ColumnContent(f"{task.value.col_name} {GPU_TEMP}", "number", True)])
+    auto_eval_column_dict.append([f"{task.name}_gpu_util", ColumnContent, ColumnContent(f"{task.value.col_name} {GPU_Util}", "number", True)])
 
 # Model information
 auto_eval_column_dict.append(["model_type", ColumnContent, ColumnContent("Type", "str", False)])

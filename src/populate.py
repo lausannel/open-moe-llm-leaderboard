@@ -12,7 +12,7 @@ from src.leaderboard.read_evals import get_raw_eval_results, EvalResult, update_
 
 from src.backend.envs import Tasks as BackendTasks
 from src.display.utils import Tasks
-from src.display.utils import E2Es, PREs, TS
+from src.display.utils import E2Es, PREs, TS, GPU_Mem, GPU_Power, GPU_TEMP, GPU_Util
 
 def get_leaderboard_df(
     results_path: str,
@@ -52,6 +52,13 @@ def get_leaderboard_df(
         "decoding_throughput": f"{TS}",
     }
 
+    gpu_metrics_to_name_map = {
+        GPU_Util: GPU_Util,
+        GPU_TEMP: GPU_TEMP,
+        GPU_Power: GPU_Power,
+        GPU_Mem: GPU_Mem
+    }
+
     all_data_json = []
     for entry in all_data_json_:
         new_entry = copy.deepcopy(entry)
@@ -62,6 +69,10 @@ def get_leaderboard_df(
                 for sys_metric, metric_namne in system_metrics_to_name_map.items():
                     if sys_metric in entry[k]:
                         new_entry[f"{k} {metric_namne}"] = entry[k][sys_metric]
+
+                for gpu_metric, metric_namne in gpu_metrics_to_name_map.items():
+                    if gpu_metric in entry[k]:
+                        new_entry[f"{k} {metric_namne}"] = entry[k][gpu_metric]
 
         all_data_json += [new_entry]
 
