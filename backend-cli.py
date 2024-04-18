@@ -435,12 +435,12 @@ if __name__ == "__main__":
     if local_debug:
         # debug_model_names = [args.model]  # Use model from arguments
         # debug_task_name = [args.task]  # Use task from arguments
-        debug_model_names = ["microsoft/phi-2", "mistralai/Mixtral-8x7B-Instruct-v0.1", "mistralai/Mixtral-8x7B-v0.1",
+        debug_model_names = ["mistralai/Mixtral-8x7B-Instruct-v0.1", "mistralai/Mixtral-8x7B-v0.1",
                             "databricks/dbrx-instruct", "databricks/dbrx-base",
                             "mistralai/Mixtral-8x22B-v0.1", "mistralai/Mixtral-8x22B-Instruct-v0.1", "alpindale/WizardLM-2-8x22B",
                             "CohereForAI/c4ai-command-r-plus"]  # Use model from arguments
         debug_task_name = ['mmlu', 'selfcheckgpt']  # Use task from arguments
-        precisions = ['4bit', 'float16', 'float32', '8bit']
+        precisions = ['4bit', 'float32', 'float16', '8bit']
         task_lst = TASKS_HARNESS.copy()
         for precision in precisions:
             for debug_model_name in debug_model_names:
