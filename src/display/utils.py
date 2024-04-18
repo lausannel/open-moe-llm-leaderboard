@@ -105,16 +105,14 @@ for task in Tasks:
     # System performance metrics
     auto_eval_column_dict.append([f"{task.name}_end_to_end_time", ColumnContent, ColumnContent(f"{task.value.col_name} {E2Es}", "number", True)])
     auto_eval_column_dict.append([f"{task.name}_batch_size", ColumnContent, ColumnContent(f"{task.value.col_name} {BATCH_SIZE}", "number", True)])
+    auto_eval_column_dict.append([f"{task.name}_gpu_mem", ColumnContent, ColumnContent(f"{task.value.col_name} {GPU_Mem}", "number", True)])
     auto_eval_column_dict.append([f"{task.name}_gpu", ColumnContent, ColumnContent(f"{task.value.col_name} {GPU_Name}", "str", True)])
+    auto_eval_column_dict.append([f"{task.name}_gpu_util", ColumnContent, ColumnContent(f"{task.value.col_name} {GPU_Util}", "number", True)])
     if task.value.benchmark in MULTIPLE_CHOICEs:
         continue
-    auto_eval_column_dict.append([f"{task.name}_prefilling_time", ColumnContent, ColumnContent(f"{task.value.col_name} {PREs}", "number", False)])
+    # auto_eval_column_dict.append([f"{task.name}_prefilling_time", ColumnContent, ColumnContent(f"{task.value.col_name} {PREs}", "number", False)])
     auto_eval_column_dict.append([f"{task.name}_decoding_throughput", ColumnContent, ColumnContent(f"{task.value.col_name} {TS}", "number", True)])
 
-    auto_eval_column_dict.append([f"{task.name}_gpu_mem", ColumnContent, ColumnContent(f"{task.value.col_name} {GPU_Mem}", "number", True)])
-    auto_eval_column_dict.append([f"{task.name}_gpu_power", ColumnContent, ColumnContent(f"{task.value.col_name} {GPU_Power}", "number", False)])
-    auto_eval_column_dict.append([f"{task.name}_gpu_temp", ColumnContent, ColumnContent(f"{task.value.col_name} {GPU_TEMP}", "number", False)])
-    auto_eval_column_dict.append([f"{task.name}_gpu_util", ColumnContent, ColumnContent(f"{task.value.col_name} {GPU_Util}", "number", True)])
 
 # Model information
 auto_eval_column_dict.append(["model_type", ColumnContent, ColumnContent("Type", "str", False)])
