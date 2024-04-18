@@ -12,7 +12,7 @@ from src.leaderboard.read_evals import get_raw_eval_results, EvalResult, update_
 
 from src.backend.envs import Tasks as BackendTasks
 from src.display.utils import Tasks
-from src.display.utils import E2Es, PREs, TS, GPU_Mem, GPU_Power, GPU_TEMP, GPU_Util
+from src.display.utils import system_metrics_to_name_map, gpu_metrics_to_name_map
 
 def get_leaderboard_df(
     results_path: str,
@@ -45,19 +45,7 @@ def get_leaderboard_df(
         bm = (task.benchmark, task.metric)
         name_to_bm_map[name] = bm
 
-    # bm_to_name_map = {bm: name for name, bm in name_to_bm_map.items()}
-    system_metrics_to_name_map = {
-        "end_to_end_time": f"{E2Es}",
-        "prefilling_time": f"{PREs}",
-        "decoding_throughput": f"{TS}",
-    }
 
-    gpu_metrics_to_name_map = {
-        GPU_Util: GPU_Util,
-        GPU_TEMP: GPU_TEMP,
-        GPU_Power: GPU_Power,
-        GPU_Mem: GPU_Mem
-    }
 
     all_data_json = []
     for entry in all_data_json_:
@@ -73,7 +61,6 @@ def get_leaderboard_df(
                 for gpu_metric, metric_namne in gpu_metrics_to_name_map.items():
                     if gpu_metric in entry[k]:
                         new_entry[f"{k} {metric_namne}"] = entry[k][gpu_metric]
-
         all_data_json += [new_entry]
 
     # all_data_json.append(baseline_row)

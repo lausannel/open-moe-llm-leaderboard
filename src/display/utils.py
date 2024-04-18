@@ -16,7 +16,24 @@ MULTIPLE_CHOICEs = ["mmlu"]
 GPU_TEMP = 'Temp(C)'
 GPU_Power = 'Power(W)'
 GPU_Mem = 'Mem(M)'
+GPU_Name = "GPU"
 GPU_Util = 'Util(%)'
+BATCH_SIZE = 'bs'
+
+system_metrics_to_name_map = {
+    "end_to_end_time": f"{E2Es}",
+    "prefilling_time": f"{PREs}",
+    "decoding_throughput": f"{TS}",
+}
+
+gpu_metrics_to_name_map = {
+    GPU_Util: GPU_Util,
+    GPU_TEMP: GPU_TEMP,
+    GPU_Power: GPU_Power,
+    GPU_Mem: GPU_Mem,
+    "batch_size": BATCH_SIZE,
+    GPU_Name: GPU_Name,
+}
 
 @dataclass
 class Task:
@@ -87,14 +104,16 @@ for task in Tasks:
     auto_eval_column_dict.append([task.name, ColumnContent, ColumnContent(task.value.col_name, "number", True)])
     # System performance metrics
     auto_eval_column_dict.append([f"{task.name}_end_to_end_time", ColumnContent, ColumnContent(f"{task.value.col_name} {E2Es}", "number", True)])
+    auto_eval_column_dict.append([f"{task.name}_batch_size", ColumnContent, ColumnContent(f"{task.value.col_name} {BATCH_SIZE}", "number", True)])
+    auto_eval_column_dict.append([f"{task.name}_gpu", ColumnContent, ColumnContent(f"{task.value.col_name} {GPU_Name}", "str", True)])
     if task.value.benchmark in MULTIPLE_CHOICEs:
         continue
-    auto_eval_column_dict.append([f"{task.name}_prefilling_time", ColumnContent, ColumnContent(f"{task.value.col_name} {PREs}", "number", True)])
+    auto_eval_column_dict.append([f"{task.name}_prefilling_time", ColumnContent, ColumnContent(f"{task.value.col_name} {PREs}", "number", False)])
     auto_eval_column_dict.append([f"{task.name}_decoding_throughput", ColumnContent, ColumnContent(f"{task.value.col_name} {TS}", "number", True)])
 
     auto_eval_column_dict.append([f"{task.name}_gpu_mem", ColumnContent, ColumnContent(f"{task.value.col_name} {GPU_Mem}", "number", True)])
-    auto_eval_column_dict.append([f"{task.name}_gpu_power", ColumnContent, ColumnContent(f"{task.value.col_name} {GPU_Power}", "number", True)])
-    auto_eval_column_dict.append([f"{task.name}_gpu_temp", ColumnContent, ColumnContent(f"{task.value.col_name} {GPU_TEMP}", "number", True)])
+    auto_eval_column_dict.append([f"{task.name}_gpu_power", ColumnContent, ColumnContent(f"{task.value.col_name} {GPU_Power}", "number", False)])
+    auto_eval_column_dict.append([f"{task.name}_gpu_temp", ColumnContent, ColumnContent(f"{task.value.col_name} {GPU_TEMP}", "number", False)])
     auto_eval_column_dict.append([f"{task.name}_gpu_util", ColumnContent, ColumnContent(f"{task.value.col_name} {GPU_Util}", "number", True)])
 
 # Model information

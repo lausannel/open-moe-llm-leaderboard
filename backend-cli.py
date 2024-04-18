@@ -166,8 +166,13 @@ def process_evaluation(task: Task, eval_request: EvalRequest, limit: Optional[in
     gpu_info = analyze_gpu_stats(gpu_stats_list)
     for task_name in results['results'].keys():
         for key, value in gpu_info.items():
-            results['results'][task_name][f"{key},none"] = int(value)
+            if "GPU" not in key:
+                results['results'][task_name][f"{key},none"] = int(value)
+            else:
+                results['results'][task_name][f"{key},none"] = value
 
+        results['results'][task_name]['batch_size,none'] = batch_size
+    print(f"gpu_stats_list: {gpu_stats_list}")
     print("GPU Usage:", gpu_info)
 
     dumped = json.dumps(results, indent=2, default=lambda o: "<not serializable>")
@@ -430,25 +435,31 @@ if __name__ == "__main__":
     if local_debug:
         # debug_model_names = [args.model]  # Use model from arguments
         # debug_task_name = [args.task]  # Use task from arguments
-        debug_model_names = ["mistralai/Mixtral-8x7B-Instruct-v0.1", "mistralai/Mixtral-8x7B-v0.1"]  # Use model from arguments
+        debug_model_names = ["microsoft/phi-2", "mistralai/Mixtral-8x7B-Instruct-v0.1", "mistralai/Mixtral-8x7B-v0.1",
+                            "databricks/dbrx-instruct", "databricks/dbrx-base",
+                            "mistralai/Mixtral-8x22B-v0.1", "mistralai/Mixtral-8x22B-Instruct-v0.1", "alpindale/WizardLM-2-8x22B",
+                            "CohereForAI/c4ai-command-r-plus"]  # Use model from arguments
         debug_task_name = ['mmlu', 'selfcheckgpt']  # Use task from arguments
-        precisions = ['float16', 'float16', '8bit']
+        precisions = ['4bit', 'float16', 'float32', '8bit']
         task_lst = TASKS_HARNESS.copy()
         for precision in precisions:
-            for task in task_lst:
-                for debug_model_name in debug_model_names:
+            for debug_model_name in debug_model_names:
+                for task in task_lst:
                     task_name = task.benchmark
                     if task_name not in debug_task_name:
                         continue
-                    eval_request = EvalRequest(
-                        model=debug_model_name,
-                        private=False,
-                        status="",
-                        json_filepath="",
-                        precision=args.precision,  # Use precision from arguments
-                        inference_framework=args.inference_framework  # Use inference framework from arguments
-                    )
-                    results = process_evaluation(task, eval_request, limit=args.limit)
+                    try:
+                        eval_request = EvalRequest(
+                            model=debug_model_name,
+                            private=False,
+                            status="",
+                            json_filepath="",
+                            precision=precision,  # Use precision from arguments
+                            inference_framework=args.inference_framework  # Use inference framework from arguments
+                        )
+                        results = process_evaluation(task, eval_request, limit=args.limit)
+                    except Exception as e:
+                        print(f"debug running error: {e}")
     else:
         while True:
             res = False

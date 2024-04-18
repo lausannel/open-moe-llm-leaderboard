@@ -103,6 +103,10 @@ class EvalResult:
 
                 if to_add is True:
                     multiplier = 100.0
+                    if "GPU" in metric:
+                        results[benchmark][metric] = value
+                        continue
+
                     if "rouge" in metric and "truthful" not in benchmark:
                         multiplier = 1.0
                     if "squad" in benchmark:
@@ -111,6 +115,10 @@ class EvalResult:
                         multiplier = 1.0
                     if "throughput" in metric:
                         multiplier = 1.0
+                    if "batch_" in metric or "Mem" in metric or "Util" in metric:
+                        multiplier = 1
+
+
                     # print('RESULTS', data['results'])
                     # print('XXX', benchmark, metric, value, multiplier)
                     results[benchmark][metric] = value * multiplier

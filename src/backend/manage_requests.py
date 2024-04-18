@@ -37,12 +37,11 @@ class EvalRequest:
             # Quantized models need some added config, the install of bits and bytes, etc
             # elif self.precision == "8bit":
             #    model_args += ",load_in_8bit=True"
-            # elif self.precision == "4bit":
-            #    model_args += ",load_in_4bit=True"
+        elif self.precision == "4bit":
+           model_args += ",load_in_4bit=True"
             # elif self.precision == "GPTQ":
             # A GPTQ model does not need dtype to be specified,
             # it will be inferred from the config
-            pass
         elif self.precision == "8bit":
             model_args += ",load_in_8bit=True"
         else:
