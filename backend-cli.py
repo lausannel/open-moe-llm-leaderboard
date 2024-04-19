@@ -172,6 +172,7 @@ def process_evaluation(task: Task, eval_request: EvalRequest, limit: Optional[in
                 results['results'][task_name][f"{key},none"] = value
 
         results['results'][task_name]['batch_size,none'] = batch_size
+        results['results'][task_name]['precision,none'] = eval_request.precision
     print(f"gpu_stats_list: {gpu_stats_list}")
     print("GPU Usage:", gpu_info)
 

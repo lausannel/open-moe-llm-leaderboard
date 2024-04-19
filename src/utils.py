@@ -74,13 +74,13 @@ def parse_nvidia_smi():
                 gpu_info.update({
                     GPU_TEMP: temp,
                     GPU_Power: power_usage,
-                    GPU_Mem: mem_usage,
+                    GPU_Mem: round(mem_usage / 1024, 2),
                     GPU_Util: gpu_util
                 })
 
             if len(gpu_info) >= 4:
                 gpu_stats.append(gpu_info)
-    print(f"len(gpu_stats): {len(gpu_stats)}")
+    print(f"gpu_stats: {gpu_stats}")
     gpu_name = f"{len(gpu_stats)}x{gpu_name}"
     gpu_stats_total = {
                         GPU_TEMP: 0,
@@ -94,7 +94,7 @@ def parse_nvidia_smi():
         gpu_stats_total[GPU_Power] += gpu_stat[GPU_Power]
         gpu_stats_total[GPU_Mem] += gpu_stat[GPU_Mem]
         gpu_stats_total[GPU_Util] += gpu_stat[GPU_Util]
-
+    gpu_stats_total[GPU_Mem] = gpu_stats_total[GPU_Mem] # G
     gpu_stats_total[GPU_TEMP] /= len(gpu_stats)
     gpu_stats_total[GPU_Power] /= len(gpu_stats)
     gpu_stats_total[GPU_Util] /= len(gpu_stats)

@@ -15,11 +15,11 @@ MULTIPLE_CHOICEs = ["mmlu"]
 
 GPU_TEMP = 'Temp(C)'
 GPU_Power = 'Power(W)'
-GPU_Mem = 'Mem(M)'
+GPU_Mem = 'Mem(G)'
 GPU_Name = "GPU"
 GPU_Util = 'Util(%)'
 BATCH_SIZE = 'bs'
-
+PRECISION = "Precision"
 system_metrics_to_name_map = {
     "end_to_end_time": f"{E2Es}",
     "prefilling_time": f"{PREs}",
@@ -32,6 +32,7 @@ gpu_metrics_to_name_map = {
     GPU_Power: GPU_Power,
     GPU_Mem: GPU_Mem,
     "batch_size": BATCH_SIZE,
+    "precision": PRECISION,
     GPU_Name: GPU_Name,
 }
 
@@ -105,6 +106,7 @@ for task in Tasks:
     # System performance metrics
     auto_eval_column_dict.append([f"{task.name}_end_to_end_time", ColumnContent, ColumnContent(f"{task.value.col_name} {E2Es}", "number", True)])
     auto_eval_column_dict.append([f"{task.name}_batch_size", ColumnContent, ColumnContent(f"{task.value.col_name} {BATCH_SIZE}", "number", True)])
+    # auto_eval_column_dict.append([f"{task.name}_precision", ColumnContent, ColumnContent(f"{task.value.col_name} {PRECISION}", "str", True)])
     auto_eval_column_dict.append([f"{task.name}_gpu_mem", ColumnContent, ColumnContent(f"{task.value.col_name} {GPU_Mem}", "number", True)])
     auto_eval_column_dict.append([f"{task.name}_gpu", ColumnContent, ColumnContent(f"{task.value.col_name} {GPU_Name}", "str", True)])
     auto_eval_column_dict.append([f"{task.name}_gpu_util", ColumnContent, ColumnContent(f"{task.value.col_name} {GPU_Util}", "number", True)])

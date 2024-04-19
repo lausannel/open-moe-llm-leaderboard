@@ -106,6 +106,9 @@ class EvalResult:
                     if "GPU" in metric:
                         results[benchmark][metric] = value
                         continue
+                    if "precision" in metric:
+                        results[benchmark][metric] = value
+                        continue
 
                     if "rouge" in metric and "truthful" not in benchmark:
                         multiplier = 1.0
