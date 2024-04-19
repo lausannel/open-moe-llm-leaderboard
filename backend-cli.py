@@ -420,9 +420,9 @@ def get_args():
     parser = argparse.ArgumentParser(description="Run the backend")
     parser.add_argument("--debug", action="store_true", help="Run in debug mode")
     # debug parameters
-    parser.add_argument("--task", type=str, default="selfcheckgpt", help="Task to debug")
-    parser.add_argument("--model", type=str, default="facebook/opt-1.3b", help="Model to debug")
-    parser.add_argument("--precision", type=str, default="float16", help="Precision to debug")
+    parser.add_argument("--task", type=str, default="selfcheckgpt,mmlu", help="Task to debug")
+    parser.add_argument("--model", type=str, default="mistralai/Mixtral-8x7B-Instruct-v0.1,mistralai/Mixtral-8x7B-v0.1", help="Model to debug")
+    parser.add_argument("--precision", type=str, default="float32,float16,8bit,4bit", help="Precision to debug")
     parser.add_argument("--inference-framework", type=str, default="hf-chat", help="Inference framework to debug")
     parser.add_argument("--limit", type=int, default=None, help="Limit for the number of samples")
     return parser.parse_args()
@@ -435,13 +435,10 @@ if __name__ == "__main__":
     if local_debug:
         # debug_model_names = [args.model]  # Use model from arguments
         # debug_task_name = [args.task]  # Use task from arguments
-        debug_model_names = ["mistralai/Mixtral-8x7B-Instruct-v0.1", "mistralai/Mixtral-8x7B-v0.1",
-                            "databricks/dbrx-instruct", "databricks/dbrx-base",
-                            "mistralai/Mixtral-8x22B-v0.1", "mistralai/Mixtral-8x22B-Instruct-v0.1", "alpindale/WizardLM-2-8x22B",
-                            "CohereForAI/c4ai-command-r-plus"]  # Use model from arguments
-        debug_task_name = ['mmlu', 'selfcheckgpt']  # Use task from arguments
-        # precisions = ['4bit', '8bit']
-        precisions = ['float32', 'float16']
+        debug_model_names = args.model.split(",")
+        debug_task_name = args.task.split(",")
+        precisions = args.precision.split(",")
+        print(f"debug_model_names: {debug_model_names}, debug_task_name: {debug_task_name}, precisions: {precisions}")
         task_lst = TASKS_HARNESS.copy()
         for precision in precisions:
             for debug_model_name in debug_model_names:
