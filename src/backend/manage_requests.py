@@ -31,7 +31,7 @@ class EvalRequest:
 
     def get_model_args(self) -> str:
         model_args = f"pretrained={self.model},revision={self.revision},parallelize=True"  # ,max_length=4096"
-        model_args += ",trust_remote_code=True"
+        model_args += ",trust_remote_code=True,device_map=auto"
         if self.precision in ["float16", "float32", "bfloat16"]:
             model_args += f",dtype={self.precision}"
             # Quantized models need some added config, the install of bits and bytes, etc
