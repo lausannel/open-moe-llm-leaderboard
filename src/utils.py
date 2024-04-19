@@ -2,6 +2,8 @@ import pandas as pd
 from huggingface_hub import snapshot_download
 import subprocess
 import re
+import os
+
 try:
     from src.display.utils import GPU_TEMP, GPU_Mem, GPU_Power, GPU_Util, GPU_Name
 except:
@@ -40,38 +42,45 @@ def get_dataset_summary_table(file_path):
     return df
 
 def parse_nvidia_smi():
-    # Execute the nvidia-smi command
-    result = subprocess.run(['nvidia-smi'], capture_output=True, text=True)
-    output = result.stdout.strip()
-
-    # Initialize data storage
+    visible_devices = os.getenv('CUDA_VISIBLE_DEVICES', None)
+    if visible_devices is not None:
+        gpu_indices = visible_devices.split(',')
+    else:
+        # Query all GPU indices if CUDA_VISIBLE_DEVICES is not set
+        result = subprocess.run(['nvidia-smi', '--query-gpu=index', '--format=csv,noheader'], capture_output=True, text=True)
+        if result.returncode != 0:
+            print("Failed to query GPU indices.")
+            return []
+        gpu_indices = result.stdout.strip().split('\n')
+    print(f"gpu_indices: {gpu_indices}")
     gpu_stats = []
 
-    # Regex to extract the relevant data for each GPU
     gpu_info_pattern = re.compile(r'(\d+)C\s+P\d+\s+(\d+)W / \d+W\s+\|\s+(\d+)MiB / \d+MiB\s+\|\s+(\d+)%')
     gpu_name_pattern = re.compile(r'NVIDIA\s+([\w\s]+?\d+GB)')
-    lines = output.split('\n')
+
     gpu_name = ""
-    for line in lines:
-        match = gpu_info_pattern.search(line)
-        name_match = gpu_name_pattern.search(line)
+    for index in gpu_indices:
+        result = subprocess.run(['nvidia-smi', '-i', index], capture_output=True, text=True)
+        output = result.stdout.strip()
+        lines = output.split("\n")
+        for line in lines:
+            match = gpu_info_pattern.search(line)
+            name_match = gpu_name_pattern.search(line)
+            gpu_info = {}
+            if name_match:
+                gpu_name = name_match.group(1).strip()
+            if match:
+                temp, power_usage, mem_usage, gpu_util = map(int, match.groups())
+                gpu_info.update({
+                    GPU_TEMP: temp,
+                    GPU_Power: power_usage,
+                    GPU_Mem: mem_usage,
+                    GPU_Util: gpu_util
+                })
 
-        gpu_info = {}
-
-        if name_match:
-            # print(name_match)
-            gpu_name = name_match.group(1).strip()
-        if match:
-            temp, power_usage, mem_usage, gpu_util = map(int, match.groups())
-            gpu_info.update({
-                GPU_TEMP: temp,
-                GPU_Power: power_usage,
-                GPU_Mem: mem_usage,
-                GPU_Util: gpu_util
-            })
-        # print(f"gpu_info: {gpu_info}")
-        if len(gpu_info) >= 4:
-            gpu_stats.append(gpu_info)
+            if len(gpu_info) >= 4:
+                gpu_stats.append(gpu_info)
+    print(f"len(gpu_stats): {len(gpu_stats)}")
     gpu_name = f"{len(gpu_stats)}x{gpu_name}"
     gpu_stats_total = {
                         GPU_TEMP: 0,
