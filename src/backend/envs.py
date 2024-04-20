@@ -63,4 +63,4 @@ EVAL_REQUESTS_PATH_BACKEND = os.path.join(CACHE_PATH, "eval-queue-bk")
 EVAL_REQUESTS_PATH_BACKEND_SYNC = os.path.join(CACHE_PATH, "eval-queue-bk-sync")
 EVAL_RESULTS_PATH_BACKEND = os.path.join(CACHE_PATH, "eval-results-bk")
 
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
