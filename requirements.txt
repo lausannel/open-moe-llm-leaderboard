@@ -27,7 +27,7 @@ cchardet
 rouge_score
 bert-score
 evaluate
-spacy
+spacy==3.7.4
 selfcheckgpt
 immutabledict
 gputil
