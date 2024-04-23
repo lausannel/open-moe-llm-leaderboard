@@ -12,8 +12,8 @@ QUEUE_REPO = "sparse-generative-ai/requests"
 QUEUE_REPO_OPEN_LLM = "open-llm-leaderboard/requests"
 RESULTS_REPO = "sparse-generative-ai/results"
 
-PRIVATE_QUEUE_REPO = "sparse-generative-ai/private-requests"
-PRIVATE_RESULTS_REPO = "sparse-generative-ai/private-results"
+DEBUG_QUEUE_REPO = "sparse-generative-ai/debug_requests"
+DEBUG_RESULTS_REPO = "sparse-generative-ai/debug_results"
 
 IS_PUBLIC = bool(os.environ.get("IS_PUBLIC", True))
 

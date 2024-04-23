@@ -3,7 +3,7 @@ import os
 from datetime import datetime, timezone
 
 from src.display.formatting import styled_error, styled_message, styled_warning
-from src.envs import API, EVAL_REQUESTS_PATH, H4_TOKEN, QUEUE_REPO, RATE_LIMIT_PERIOD, RATE_LIMIT_QUOTA
+from src.envs import API, EVAL_REQUESTS_PATH, H4_TOKEN, QUEUE_REPO, RATE_LIMIT_PERIOD, RATE_LIMIT_QUOTA, DEBUG_QUEUE_REPO
 from src.leaderboard.filter_models import DO_NOT_SUBMIT_MODELS
 from src.submission.check_validity import (
     already_submitted_models,
@@ -26,12 +26,17 @@ def add_new_eval(
     weight_type: str,
     model_type: str,
     inference_framework: str,
+    debug: bool = False,
+    gpu_type: str = "NVIDIA-A100-PCIe-80GB",
 ):
     global REQUESTED_MODELS
     global USERS_TO_SUBMISSION_DATES
     if not REQUESTED_MODELS:
         REQUESTED_MODELS, USERS_TO_SUBMISSION_DATES = already_submitted_models(EVAL_REQUESTS_PATH)
 
+    if debug:
+        QUEUE_REPO = DEBUG_QUEUE_REPO
+    
     user_name = ""
     model_path = model
     if "/" in model:
@@ -110,17 +115,18 @@ def add_new_eval(
         "params": model_size,
         "license": license,
         "inference_framework": inference_framework,
+        "gpu_type": gpu_type
     }
 
     # Check for duplicate submission
-    if f"{model}_{revision}_{precision}_{inference_framework}" in REQUESTED_MODELS:
+    if f"{model}_{revision}_{precision}_{inference_framework}_{gpu_type}" in REQUESTED_MODELS:
         return styled_warning("This model has been already submitted.")
 
     print("Creating eval file")
     OUT_DIR = f"{EVAL_REQUESTS_PATH}/{user_name}"
     os.makedirs(OUT_DIR, exist_ok=True)
     # out_path = f"{OUT_DIR}/{model_path}_eval_request_{private}_{precision}_{weight_type}.json"
-    out_path = f"{OUT_DIR}/{model_path}_eval_request_{private}_{precision}_{weight_type}_{inference_framework}.json"
+    out_path = f"{OUT_DIR}/{model_path}_eval_request_{private}_{precision}_{weight_type}_{inference_framework}_{gpu_type}.json"
 
     with open(out_path, "w") as f:
         f.write(json.dumps(eval_entry))

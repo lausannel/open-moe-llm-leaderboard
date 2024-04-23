@@ -28,6 +28,7 @@ class EvalRequest:
     params: Optional[int] = None
     license: Optional[str] = ""
     batch_size: Optional[int] = 1
+    gpu_type: Optional[str] = "NVIDIA-A100-PCIe-80GB"
 
     def get_model_args(self) -> str:
         model_args = f"pretrained={self.model},revision={self.revision},parallelize=True"  # ,max_length=4096"

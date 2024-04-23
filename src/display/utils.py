@@ -140,6 +140,7 @@ class EvalQueueColumn:  # Queue column
     private = ColumnContent("private", "bool", True)
     precision = ColumnContent("precision", "str", True)
     weight_type = ColumnContent("weight_type", "str", "Original")
+    model_framework = ColumnContent("inference_framework", "str", True)
     status = ColumnContent("status", "str", True)
 
 
@@ -189,7 +190,25 @@ class InferenceFramework(Enum):
             return InferenceFramework.HF_Chat
         return InferenceFramework.Unknown
 
+class GPUType(Enum):
+    H100_pcie = ModelDetails("NVIDIA-H100-PCIe-80GB")
+    A100_pcie = ModelDetails("NVIDIA-A100-PCIe-80GB")
+    A5000 = ModelDetails("NVIDIA-RTX-A5000-24GB")
+    Unknown = ModelDetails("?")
 
+    def to_str(self):
+        return self.value.name
+
+    @staticmethod
+    def from_str(gpu_type: str):
+        if gpu_type in ["NVIDIA-H100-PCIe-80GB"]:
+            return GPUType.A100_pcie
+        if gpu_type in ["NVIDIA-A100-PCIe-80GB"]:
+            return GPUType.H100_pcie
+        if gpu_type in ["NVIDIA-A5000-24GB"]:
+            return GPUType.A5000
+        return GPUType.Unknown
+    
 class WeightType(Enum):
     Adapter = ModelDetails("Adapter")
     Original = ModelDetails("Original")

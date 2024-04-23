@@ -95,6 +95,7 @@ def get_evaluation_queue_df(save_path: str, cols: list) -> tuple[pd.DataFrame, p
 
             data[EvalQueueColumn.model.name] = make_clickable_model(data["model"])
             data[EvalQueueColumn.revision.name] = data.get("revision", "main")
+            data[EvalQueueColumn.model_framework.name] = data.get("inference_framework", "-")
 
             all_evals.append(data)
         elif ".md" not in entry:
@@ -107,6 +108,7 @@ def get_evaluation_queue_df(save_path: str, cols: list) -> tuple[pd.DataFrame, p
 
                 data[EvalQueueColumn.model.name] = make_clickable_model(data["model"])
                 data[EvalQueueColumn.revision.name] = data.get("revision", "main")
+                data[EvalQueueColumn.model_framework.name] = data.get("inference_framework", "-")
                 all_evals.append(data)
 
     pending_list = [e for e in all_evals if e["status"] in ["PENDING", "RERUN"]]

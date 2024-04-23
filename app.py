@@ -2,10 +2,11 @@
 import os
 import datetime
 import socket
+from threading import Thread
 
 import gradio as gr
 import pandas as pd
-
+import time
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from huggingface_hub import snapshot_download
@@ -35,13 +36,27 @@ from src.display.utils import (
     fields,
     WeightType,
     Precision,
+    GPUType
 )
 
-from src.envs import API, EVAL_REQUESTS_PATH, EVAL_RESULTS_PATH, H4_TOKEN, IS_PUBLIC, QUEUE_REPO, REPO_ID, RESULTS_REPO
+from src.envs import API, EVAL_REQUESTS_PATH, EVAL_RESULTS_PATH, H4_TOKEN, IS_PUBLIC, \
+    QUEUE_REPO, REPO_ID, RESULTS_REPO, DEBUG_QUEUE_REPO, DEBUG_RESULTS_REPO
 from src.populate import get_evaluation_queue_df, get_leaderboard_df
 from src.submission.submit import add_new_eval
 from src.utils import get_dataset_summary_table
 
+def get_args():
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Run the LLM Leaderboard")
+    parser.add_argument("--debug", action="store_true", help="Run in debug mode")
+    return parser.parse_args()
+
+args = get_args()
+if args.debug:
+    print("Running in debug mode")
+    QUEUE_REPO = DEBUG_QUEUE_REPO
+    RESULTS_REPO = DEBUG_RESULTS_REPO
 
 def ui_snapshot_download(repo_id, local_dir, repo_type, tqdm_class, etag_timeout):
     try:
@@ -74,11 +89,6 @@ def init_space():
         EVAL_REQUESTS_PATH, EVAL_COLS
     )
     return dataset_df, original_df, finished_eval_queue_df, running_eval_queue_df, pending_eval_queue_df
-
-
-dataset_df, original_df, finished_eval_queue_df, running_eval_queue_df, pending_eval_queue_df = init_space()
-leaderboard_df = original_df.copy()
-
 
 # Searching and filtering
 def update_table(
@@ -142,6 +152,51 @@ def filter_models(df: pd.DataFrame, type_query: list, size_query: list, precisio
 
     return filtered_df
 
+shown_columns = None
+dataset_df, original_df, finished_eval_queue_df, running_eval_queue_df, pending_eval_queue_df = init_space()
+leaderboard_df = original_df.copy()
+
+# def update_leaderboard_table():
+#     global leaderboard_df, shown_columns
+#     print("Updating leaderboard table")
+#     return leaderboard_df[
+#                 [c.name for c in fields(AutoEvalColumn) if c.never_hidden]
+#                 + shown_columns.value
+#                 + [AutoEvalColumn.dummy.name]
+#             ] if not leaderboard_df.empty else leaderboard_df
+        
+
+# def update_hidden_leaderboard_table():
+#     global original_df
+#     return original_df[COLS] if original_df.empty is False else original_df
+
+# def update_dataset_table():
+#     global dataset_df
+#     return dataset_df
+
+# def update_finish_table():
+#     global finished_eval_queue_df
+#     return finished_eval_queue_df
+
+# def update_running_table():
+#     global running_eval_queue_df
+#     return running_eval_queue_df
+
+# def update_pending_table():
+#     global pending_eval_queue_df
+#     return pending_eval_queue_df
+
+# def update_finish_num():
+#     global finished_eval_queue_df
+#     return len(finished_eval_queue_df)
+
+# def update_running_num():
+#     global running_eval_queue_df
+#     return len(running_eval_queue_df)
+
+# def update_pending_num():
+#     global pending_eval_queue_df
+#     return len(pending_eval_queue_df)
 
 # triggered only once at startup => read query parameter if it exists
 def load_query(request: gr.Request):
@@ -162,7 +217,7 @@ with demo:
                         search_bar = gr.Textbox(
                             placeholder=" 🔍 Model search (separate multiple queries with `;`)",
                             show_label=False,
-                            elem_id="search-bar",
+                            elem_id="search-bar"
                         )
                     with gr.Row():
                         shown_columns = gr.CheckboxGroup(
@@ -251,14 +306,14 @@ with demo:
                     filter_columns_size,
                     search_bar,
                 ],
-                leaderboard_table,
+                leaderboard_table
             )
 
             # Check query parameter once at startup and update search bar
             demo.load(load_query, inputs=[], outputs=[search_bar])
 
             for selector in [shown_columns, filter_columns_type, filter_columns_precision, filter_columns_size]:
-                selector.change(
+                selector.select(
                     update_table,
                     [
                         hidden_leaderboard_table_for_search,
@@ -323,6 +378,15 @@ with demo:
                     value=None,
                     interactive=True,
                 )
+                
+                gpu_type = gr.Dropdown(
+                    choices=[t.to_str() for t in GPUType],
+                    label="GPU type",
+                    multiselect=False,
+                    value="NVIDIA-A100-PCIe-80GB",
+                    interactive=True,
+                )
+                
 
             with gr.Row():
                 with gr.Column():
@@ -358,6 +422,7 @@ with demo:
 
             submit_button = gr.Button("Submit Eval")
             submission_result = gr.Markdown()
+            debug = gr.Checkbox(value=args.debug, label="Debug", visible=False)
             submit_button.click(
                 add_new_eval,
                 [
@@ -369,6 +434,8 @@ with demo:
                     weight_type,
                     model_type,
                     inference_framework,
+                    debug,
+                    gpu_type
                 ],
                 submission_result,
             )
@@ -385,8 +452,7 @@ with demo:
 
 scheduler = BackgroundScheduler()
 
-scheduler.add_job(restart_space, "interval", seconds=6 * 60 * 60)
-
+scheduler.add_job(restart_space, "interval", hours=6)
 
 def launch_backend():
     import subprocess
@@ -395,8 +461,9 @@ def launch_backend():
     if DEVICE not in {"cpu"}:
         _ = subprocess.run(["python", "backend-cli.py"])
 
-
+# Thread(target=periodic_init, daemon=True).start()
 # scheduler.add_job(launch_backend, "interval", seconds=120)
-
-scheduler.start()
-demo.queue(default_concurrency_limit=40).launch()
+if __name__ == "__main__":
+    scheduler.start()
+    demo.queue(default_concurrency_limit=40).launch()
+    

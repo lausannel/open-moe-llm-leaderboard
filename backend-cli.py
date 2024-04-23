@@ -16,13 +16,13 @@ from src.backend.envs import Tasks, EVAL_REQUESTS_PATH_BACKEND, EVAL_RESULTS_PAT
 from src.backend.manage_requests import EvalRequest
 from src.leaderboard.read_evals import EvalResult
 
-from src.envs import QUEUE_REPO, RESULTS_REPO, API
+from src.envs import QUEUE_REPO, RESULTS_REPO, API, DEBUG_QUEUE_REPO, DEBUG_RESULTS_REPO
 from src.utils import my_snapshot_download, analyze_gpu_stats, parse_nvidia_smi, monitor_gpus
 
 from src.leaderboard.read_evals import get_raw_eval_results
 
 from typing import Optional
-
+import GPUtil
 import time
 
 import pprint
@@ -126,6 +126,9 @@ def request_to_result_name(request: EvalRequest) -> str:
 def process_evaluation(task: Task, eval_request: EvalRequest, limit: Optional[int] = None) -> dict:
     batch_size = 1
     batch_size = eval_request.batch_size
+    
+    if args.debug:
+        RESULTS_REPO = DEBUG_RESULTS_REPO
 
     init_gpu_info = analyze_gpu_stats(parse_nvidia_smi())
     # if init_gpu_info['Mem(M)'] > 500:
@@ -364,9 +367,22 @@ def maybe_refresh_results(thr: int, hard_task_lst: Optional[list[str]] = None) -
     return False
 
 
-def process_pending_requests() -> bool:
-    sanity_checks()
+def get_gpu_details():
+    gpus = GPUtil.getGPUs()
+    gpu = gpus[0]
+    name = gpu.name.replace(" ", "-")
+    # Convert memory from MB to GB and round to nearest whole number
+    memory_gb = round(gpu.memoryTotal / 1024)
+    memory = f"{memory_gb}GB"
+    formatted_name = f"{name}-{memory}"
+    return formatted_name
 
+def process_pending_requests() -> bool:
+    if args.debug:
+        QUEUE_REPO = DEBUG_QUEUE_REPO
+        
+    sanity_checks()
+    print("Processing pending requests")
     current_pending_status = [PENDING_STATUS]
 
     # Get all eval request that are PENDING, if you want to run other evals, change this parameter
@@ -385,6 +401,12 @@ def process_pending_requests() -> bool:
 
     eval_request = eval_requests[0]
     pp.pprint(eval_request)
+    
+    gpu_type = eval_request.gpu_type
+    curr_gpu_type = get_gpu_details()
+    if gpu_type != curr_gpu_type:
+        print(f"GPU type mismatch: {gpu_type} vs {curr_gpu_type}")
+        return False
 
     my_snapshot_download(
         repo_id=QUEUE_REPO, revision="main", local_dir=EVAL_REQUESTS_PATH_BACKEND, repo_type="dataset", max_workers=60
@@ -426,6 +448,8 @@ def get_args():
     parser.add_argument("--precision", type=str, default="float32,float16,8bit,4bit", help="Precision to debug")
     parser.add_argument("--inference-framework", type=str, default="hf-chat", help="Inference framework to debug")
     parser.add_argument("--limit", type=int, default=None, help="Limit for the number of samples")
+    parser.add_argument("--gpu-type", type=str, default="NVIDIA-A100-PCIe-80GB", 
+                        help="GPU type. NVIDIA-A100-PCIe-80GB; NVIDIA-RTX-A5000-24GB; NVIDIA-H100-PCIe-80GB")
     return parser.parse_args()
 
 
@@ -454,8 +478,13 @@ if __name__ == "__main__":
                             status="",
                             json_filepath="",
                             precision=precision,  # Use precision from arguments
-                            inference_framework=args.inference_framework  # Use inference framework from arguments
+                            inference_framework=args.inference_framework,  # Use inference framework from arguments
+                            gpu_type=args.gpu_type
                         )
+                        curr_gpu_type = get_gpu_details()
+                        if eval_request.gpu_type != curr_gpu_type:
+                            print(f"GPU type mismatch: {eval_request.gpu_type} vs {curr_gpu_type}")
+                            raise Exception("GPU type mismatch")
                         results = process_evaluation(task, eval_request, limit=args.limit)
                     except Exception as e:
                         print(f"debug running error: {e}")

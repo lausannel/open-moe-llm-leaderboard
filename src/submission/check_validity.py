@@ -130,7 +130,7 @@ def already_submitted_models(requested_models_dir: str) -> set[str]:
                     continue
                 with open(os.path.join(root, file), "r") as f:
                     info = json.load(f)
-                    file_names.append(f"{info['model']}_{info['revision']}_{info['precision']}_{info['inference_framework']}")
+                    file_names.append(f"{info['model']}_{info['revision']}_{info['precision']}_{info['inference_framework']}_{info['gpu_type']}")
 
                     # Select organisation
                     if info["model"].count("/") == 0 or "submitted_time" not in info:
