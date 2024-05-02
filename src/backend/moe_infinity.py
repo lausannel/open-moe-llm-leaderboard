@@ -17,7 +17,8 @@ class MoEHFLM(HFLMWithMeasurement):
         self,
         pretrained: str = "mistralai/Mixtral-8x7B-Instruct-v0.1",
         moe_config: dict = None,
-        offload_path=os.path.expanduser("~"),
+        # offload_path=os.path.expanduser("~"),
+        offload_path='/mnt/raid0nvme1/xly/test-data/',
         device_memory_ratio=0.75,
         use_chat_template=True,
         *args,
@@ -40,6 +41,8 @@ class MoEHFLM(HFLMWithMeasurement):
 
     def __del__(self):
         # Clean up offloaded models from self.offload_path
+        self._model.engine.clean_up()
+        self._model.engine.archer_engine.clean_up_resources()
         if os.path.exists(os.path.join(self.offload_path, "moe-infinity-offloads")):
             shutil.rmtree(os.path.join(self.offload_path, "moe-infinity-offloads"))
 
